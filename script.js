@@ -32,6 +32,22 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    // Global keyboard listeners
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.settingsModal.classList.contains('hidden')) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
+
+    ['user-name', 'user-dob', 'user-country'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') saveUserData();
+            });
+        }
+    });
 }
 
 function loadUserData() {
