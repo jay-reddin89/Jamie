@@ -525,3 +525,22 @@ header {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-cyan);
 }
+
+/* Collapsible Section Styles */
+.collapsible-section {
+    margin-bottom: 8px;
+}
+
+.section-content {
+    transition: all 0.3s ease-in-out;
+}
+
+.toggle-arrow {
+    font-size: 0.8rem;
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+}
+
+.card {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}

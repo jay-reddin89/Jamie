@@ -1,6 +1,6 @@
 const state = {
     user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
-    settings: { sections: ['realtime', 'facts', 'livedthrough', 'top', 'astronomical'] },
+    settings: { sections: ['realtime', 'facts', 'livedthrough', 'top', 'astronomical', 'economic', 'biological', 'standing', 'tech', 'transit'] },
     isPuterSignedIn: false
 };
 
@@ -218,6 +218,13 @@ function renderResults() {
         elements.resultsSection.appendChild(container);
     }
 
+    // New Sections
+    if (sections.includes('economic')) renderEconomicPulse();
+    if (sections.includes('biological')) renderBiologicalMilestones();
+    if (sections.includes('standing')) renderGlobalStanding();
+    if (sections.includes('tech')) renderTechnologicalEra();
+    if (sections.includes('transit')) renderEarthTransit();
+
     // 4. Critical Events Log
     if (sections.includes('livedthrough')) {
         const { container, content } = createCollapsibleSection('CRITICAL EVENTS LOG');
@@ -303,6 +310,109 @@ function renderResults() {
     elements.resultsSection.appendChild(footer);
 
     startLiveUpdates();
+}
+
+// --- New Rendering Functions ---
+
+function renderEconomicPulse() {
+    const { container, content } = createCollapsibleSection('ECONOMIC PULSE');
+    const age = calculateAge(state.user.dob).years;
+    const inflationFactor = Math.pow(1.03, age).toFixed(2);
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Inflation Multiplier</div></div><div class="item-val">${inflationFactor}x</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">$1.00 then is worth</div></div><div class="item-val">$${inflationFactor} today</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Avg. Milk Price then</div></div><div class="item-val">$${(2.50 / inflationFactor).toFixed(2)}</div></div>
+        <div class="list-item"><div class="item-num">04</div><div class="item-main"><div class="item-title">Avg. Gas Price then</div></div><div class="item-val">$${(3.50 / inflationFactor).toFixed(2)}</div></div>
+    `;
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderBiologicalMilestones() {
+    const { container, content } = createCollapsibleSection('BIO MILESTONES');
+    const age = calculateAge(state.user.dob);
+    const totalDays = age.years * 365;
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Hair Grown</div></div><div class="item-val">~${(totalDays * 0.035).toFixed(1)} meters</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Nails Grown</div></div><div class="item-val">~${(totalDays * 0.01).toFixed(1)} cm</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Skin Shed</div></div><div class="item-val">~${(age.years * 0.7).toFixed(1)} kg</div></div>
+        <div class="list-item"><div class="item-num">04</div><div class="item-main"><div class="item-title">Total Blinks</div></div><div class="item-val">~${formatLarge(totalDays * 15 * 60 * 16)}</div></div>
+    `;
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderGlobalStanding() {
+    const { container, content } = createCollapsibleSection('GLOBAL STANDING');
+    const age = calculateAge(state.user.dob).years;
+    const percentile = Math.min(99, Math.max(1, age * 1.2)).toFixed(1);
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Age Percentile</div></div><div class="item-val">Older than ${percentile}%</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Global Human Rank</div></div><div class="item-val">~${formatLarge(8e9 * (1 - percentile/100))}</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Generational Cohort</div></div><div class="item-val">${getGeneration(age)}</div></div>
+    `;
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function getGeneration(age) {
+    const birthYear = new Date().getFullYear() - age;
+    if (birthYear >= 2010) return "Gen Alpha";
+    if (birthYear >= 1997) return "Gen Z";
+    if (birthYear >= 1981) return "Millennial";
+    if (birthYear >= 1965) return "Gen X";
+    if (birthYear >= 1946) return "Boomer";
+    return "Silent Gen";
+}
+
+function renderTechnologicalEra() {
+    const { container, content } = createCollapsibleSection('TECH ERA');
+    const birthYear = new Date(state.user.dob).getFullYear();
+    const techItems = [
+        { year: 1983, name: "The Internet (TCP/IP)" },
+        { year: 1989, name: "World Wide Web" },
+        { year: 1991, name: "Linux" },
+        { year: 1995, name: "Windows 95" },
+        { year: 1998, name: "Google" },
+        { year: 2001, name: "Wikipedia / iPod" },
+        { year: 2004, name: "Facebook" },
+        { year: 2007, name: "iPhone" },
+        { year: 2009, name: "Bitcoin" },
+        { year: 2010, name: "Instagram" },
+        { year: 2015, name: "Ethereum" },
+        { year: 2022, name: "ChatGPT (AI Era)" }
+    ].filter(i => i.year >= birthYear);
+
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = techItems.slice(0, 6).map((item, i) => `
+        <div class="list-item"><div class="item-num">${(i+1).toString().padStart(2, '0')}</div><div class="item-main"><div class="item-title">${item.name}</div></div><div class="item-val">${item.year}</div></div>
+    `).join('') || '<div class="list-item">AI ERA DEFINED</div>';
+
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderEarthTransit() {
+    const { container, content } = createCollapsibleSection('EARTH TRANSIT');
+    const age = calculateAge(state.user.dob).years;
+    const galacticDist = age * 4.5e9; // 4.5 billion miles per year orbital velocity in galaxy
+    const leaps = Math.floor(age / 4);
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Galactic Distance Traveled</div></div><div class="item-val">${formatLarge(galacticDist)} miles</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Leap Years Survived</div></div><div class="item-val">${leaps}</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Earth Revolutions</div></div><div class="item-val">${age} orbits</div></div>
+    `;
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
 }
 
 // --- Data Fetchers ---
