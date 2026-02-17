@@ -1,5 +1,5 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null, liveUpdateInterval: null },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
@@ -174,6 +174,9 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
 function renderResults() {
     const sections = state.settings.sections;
     elements.resultsSection.innerHTML = '';
+
+    // Optimization: Cache parsed DOB once
+    state.user.dobDate = state.user.dob ? new Date(state.user.dob) : null;
 
     // Profile Panel
     const profile = document.createElement('div');
@@ -588,7 +591,9 @@ function getEraData(year) {
 // --- Utils ---
 
 function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+    // Optimization: Use cached dobDate if available and matching
+    const dobDate = (dobStr === state.user.dob && state.user.dobDate) ? state.user.dobDate : new Date(dobStr);
+    const diff = new Date() - dobDate;
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -597,28 +602,49 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    // Optimization: Clear existing interval to prevent leaks
+    if (state.user.liveUpdateInterval) clearInterval(state.user.liveUpdateInterval);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    const dobDate = state.user.dobDate || new Date(state.user.dob);
+    if (!dobDate || isNaN(dobDate.getTime())) return;
+
+    // Optimization: Cache DOM references and move static calculations out of the interval
+    const bornDayVal = dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+    const updateEls = {
+        seconds: document.getElementById('val-seconds'),
+        years: document.getElementById('val-years'),
+        months: document.getElementById('val-months'),
+        weeks: document.getElementById('val-weeks'),
+        days: document.getElementById('val-days'),
+        hours: document.getElementById('val-hours'),
+        minutes: document.getElementById('val-minutes'),
+        bornDay: document.getElementById('val-born-day'),
+        heart: document.getElementById('est-heart'),
+        breaths: document.getElementById('est-breaths'),
+        sleep: document.getElementById('est-sleep'),
+        eat: document.getElementById('est-eat'),
+        blinks: document.getElementById('est-blinks')
+    };
+
+    state.user.liveUpdateInterval = setInterval(() => {
+        const diff = new Date() - dobDate;
+        const age = calculateAge(state.user.dob);
+
+        if (updateEls.seconds) updateEls.seconds.textContent = Math.floor(diff / 1000).toLocaleString();
+        if (updateEls.years) updateEls.years.textContent = age.years;
+        if (updateEls.months) updateEls.months.textContent = Math.floor(diff / 2629800000).toLocaleString();
+        if (updateEls.weeks) updateEls.weeks.textContent = Math.floor(diff / 604800000).toLocaleString();
+        if (updateEls.days) updateEls.days.textContent = Math.floor(diff / 86400000).toLocaleString();
+        if (updateEls.hours) updateEls.hours.textContent = Math.floor(diff / 3600000).toLocaleString();
+        if (updateEls.minutes) updateEls.minutes.textContent = age.minutes.toLocaleString();
+        if (updateEls.bornDay) updateEls.bornDay.textContent = bornDayVal;
 
         const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
-
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        if (updateEls.heart) updateEls.heart.textContent = formatLarge(mins * 72);
+        if (updateEls.breaths) updateEls.breaths.textContent = formatLarge(mins * 14);
+        if (updateEls.sleep) updateEls.sleep.textContent = formatLarge(days * 8);
+        if (updateEls.eat) updateEls.eat.textContent = formatLarge(days * 1.5);
+        if (updateEls.blinks) updateEls.blinks.textContent = formatLarge(days * 15 * 60 * 16);
     }, 1000);
 }
 
