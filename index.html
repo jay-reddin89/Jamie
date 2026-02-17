@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JR Life Facts</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://js.puter.com/v2/"></script>
+</head>
+<body class="militaristic-ui">
+    <div id="app">
+        <!-- Header -->
+        <header>
+            <div class="logo">JR LIFE FACTS</div>
+            <button id="settings-btn" class="icon-btn">⚙️</button>
+        </header>
+
+        <!-- Main Content -->
+        <main id="main-content">
+            <!-- User Input Section -->
+            <section id="input-section" class="screen">
+                <div class="hud-panel">
+                    <h2>IDENTIFICATION REQUIRED</h2>
+                    <div class="form-group">
+                        <label>NAME</label>
+                        <input type="text" id="user-name" placeholder="ENTER NAME...">
+                    </div>
+                    <div class="form-group">
+                        <label>DATE OF BIRTH</label>
+                        <input type="date" id="user-dob">
+                    </div>
+                    <div class="form-group">
+                        <label>GENDER (OPTIONAL)</label>
+                        <select id="user-gender">
+                            <option value="">SELECT...</option>
+                            <option value="male">MALE</option>
+                            <option value="female">FEMALE</option>
+                            <option value="other">OTHER</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>COUNTRY (OPTIONAL)</label>
+                        <input type="text" id="user-country" placeholder="ENTER COUNTRY...">
+                    </div>
+                    <div class="form-group">
+                        <label>PROFILE PICTURE</label>
+                        <input type="file" id="user-pic" accept="image/*">
+                        <div id="pic-preview" class="pic-preview"></div>
+                    </div>
+                    <button id="save-user-btn" class="primary-btn">SAVE & INITIALIZE</button>
+                    <button id="generate-btn" class="primary-btn hidden">GENERATE STATS</button>
+                </div>
+            </section>
+
+            <!-- Loading Section -->
+            <section id="loading-section" class="screen hidden">
+                <div class="hud-panel">
+                    <h2>CRUNCHING DATA...</h2>
+                    <div class="progress-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                    <p id="loading-status">SCANNING HISTORICAL RECORDS</p>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="screen hidden">
+                <!-- Result components will be injected here -->
+            </section>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content hud-panel">
+                <h3>SYSTEM SETTINGS</h3>
+                <button id="puter-signin-btn" class="secondary-btn">SIGN IN PUTER</button>
+                <div id="puter-user-info" class="hidden">
+                    CONNECTED: <span id="puter-username"></span>
+                </div>
+
+                <hr>
+
+                <h4>DATA SECTIONS</h4>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" class="section-toggle" data-section="realtime" checked> REAL TIME</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="facts" checked> FACTS</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="livedthrough" checked> LIVED THROUGH</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="top" checked> TOP CHARTS</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="astronomical" checked> ASTRONOMICAL</label>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="settings-save-btn" class="primary-btn">APPLY</button>
+                    <button id="settings-cancel-btn" class="secondary-btn">CANCEL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div id="notification" class="notification hidden"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
