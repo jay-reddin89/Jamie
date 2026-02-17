@@ -1,15 +1,6 @@
-// JR Life Facts - Main Logic
 const state = {
-    user: {
-        name: '',
-        dob: '',
-        gender: '',
-        country: '',
-        profilePic: ''
-    },
-    settings: {
-        sections: ['realtime', 'facts', 'livedthrough', 'top', 'astronomical']
-    },
+    user: { name: '', dob: '', country: '', profilePic: '' },
+    settings: { sections: ['realtime', 'facts', 'livedthrough', 'top', 'astronomical'] },
     isPuterSignedIn: false
 };
 
@@ -23,8 +14,7 @@ const elements = {
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
     progressBar: document.getElementById('progress-bar'),
-    notification: document.getElementById('notification'),
-    picPreview: document.getElementById('pic-preview')
+    notification: document.getElementById('notification')
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -48,36 +38,18 @@ function loadUserData() {
         state.user = JSON.parse(savedData);
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
-        document.getElementById('user-gender').value = state.user.gender;
         document.getElementById('user-country').value = state.user.country;
-        if (state.user.profilePic) {
-            elements.picPreview.style.backgroundImage = `url(${state.user.profilePic})`;
-        }
         elements.generateBtn.classList.remove('hidden');
-    }
-
-    const savedSettings = localStorage.getItem('jr_life_facts_settings');
-    if (savedSettings) {
-        state.settings = JSON.parse(savedSettings);
-        document.querySelectorAll('.section-toggle').forEach(cb => {
-            cb.checked = state.settings.sections.includes(cb.dataset.section);
-        });
     }
 }
 
 function saveUserData() {
     state.user.name = document.getElementById('user-name').value;
     state.user.dob = document.getElementById('user-dob').value;
-    state.user.gender = document.getElementById('user-gender').value;
     state.user.country = document.getElementById('user-country').value;
-
-    if (!state.user.name || !state.user.dob) {
-        showNotification('NAME AND DOB REQUIRED');
-        return;
-    }
-
+    if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
-    showNotification('DATA SAVED TO LOCAL STORAGE');
+    showNotification('SEQUENCE INITIALIZED');
     elements.generateBtn.classList.remove('hidden');
 }
 
@@ -85,75 +57,49 @@ function handlePicUpload(e) {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (event) => {
-            state.user.profilePic = event.target.result;
-            elements.picPreview.style.backgroundImage = `url(${event.target.result})`;
-        };
+        reader.onload = (event) => state.user.profilePic = event.target.result;
         reader.readAsDataURL(file);
     }
 }
 
 function toggleModal(modal, show) {
-    if (show) modal.classList.remove('hidden');
-    else modal.classList.add('hidden');
+    modal.classList.toggle('hidden', !show);
 }
 
 function applySettings() {
-    const selectedSections = [];
-    document.querySelectorAll('.section-toggle:checked').forEach(cb => {
-        selectedSections.push(cb.dataset.section);
-    });
-    state.settings.sections = selectedSections;
+    state.settings.sections = Array.from(document.querySelectorAll('.section-toggle:checked')).map(cb => cb.dataset.section);
     localStorage.setItem('jr_life_facts_settings', JSON.stringify(state.settings));
     toggleModal(elements.settingsModal, false);
-    showNotification('SETTINGS APPLIED');
+    showNotification('SYSTEM UPDATED');
 }
 
 async function handlePuterSignIn() {
     try {
         const res = await puter.auth.signIn();
-        state.isPuterSignedIn = true;
-        document.getElementById('puter-username').textContent = res.username || 'CONNECTED';
+        document.getElementById('puter-username').textContent = res.username;
         document.getElementById('puter-user-info').classList.remove('hidden');
         elements.puterSigninBtn.classList.add('hidden');
-        showNotification('CONNECTED TO PUTER');
-    } catch (err) {
-        console.error('Puter Sign-in failed', err);
-        showNotification('SIGN-IN FAILED');
-    }
+    } catch (e) {}
 }
 
 function showNotification(msg) {
     elements.notification.textContent = msg;
     elements.notification.classList.remove('hidden');
-    setTimeout(() => {
-        elements.notification.classList.add('hidden');
-    }, 3000);
+    setTimeout(() => elements.notification.classList.add('hidden'), 3000);
 }
 
 function startGeneration() {
     elements.inputSection.classList.add('hidden');
     elements.loadingSection.classList.remove('hidden');
-
     let progress = 0;
     const interval = setInterval(() => {
-        progress += Math.random() * 12;
+        progress += Math.random() * 15;
         if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
-            setTimeout(showResults, 500);
+            setTimeout(showResults, 600);
         }
         elements.progressBar.style.width = `${progress}%`;
-
-        const statuses = [
-            'SCANNING HISTORICAL RECORDS...',
-            'CALCULATING BIOMETRIC ESTIMATES...',
-            'RETRIEVING ASTRONOMICAL DATA...',
-            'COMPILING CHART TOPPERS...',
-            'SYNCING WITH SATELLITES...',
-            'ALMOST READY...'
-        ];
-        document.getElementById('loading-status').textContent = statuses[Math.floor(progress / 18)] || statuses[5];
     }, 150);
 }
 
@@ -167,266 +113,220 @@ function renderResults() {
     const sections = state.settings.sections;
     elements.resultsSection.innerHTML = '';
 
-    const summary = document.createElement('div');
-    summary.className = 'hud-panel';
-    summary.id = 'summary-panel';
-    summary.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            ${state.user.profilePic ? `<div class="pic-preview" style="background-image: url(${state.user.profilePic}); width: 60px; height: 60px; border-radius: 50%;"></div>` : '<div class="pic-preview" style="width: 60px; height: 60px; background: #222; display: flex; align-items: center; justify-content: center;">?</div>'}
-            <div>
-                <h2 style="margin:0">${state.user.name.toUpperCase()}</h2>
-                <p style="font-size:0.7rem; color: var(--accent-secondary)">REGISTRY: ${state.user.country.toUpperCase() || 'UNKNOWN'}</p>
-            </div>
+    // 1. Profile Panel
+    const profile = document.createElement('div');
+    profile.className = 'card profile-card';
+    profile.innerHTML = `
+        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '🧬'}</div>
+        <div class="profile-details">
+            <div class="sub-label">SUBJECT</div>
+            <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>
+            <div class="location-label">📍 ${state.user.country || 'UNKNOWN LOCALE'}</div>
         </div>
+        <div class="badge-active">ACTIVE</div>
     `;
-    elements.resultsSection.appendChild(summary);
+    elements.resultsSection.appendChild(profile);
 
-    if (sections.includes('realtime')) renderRealTime();
-    if (sections.includes('facts')) renderFacts();
-    if (sections.includes('livedthrough')) renderLivedThrough();
-    if (sections.includes('top')) renderTopCharts();
-    if (sections.includes('astronomical')) renderAstronomical();
+    // 2. Biometrics Stream
+    if (sections.includes('realtime')) {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<div class="section-label">BIOMETRICS STREAM <span style="float:right; color:#ff7043; font-size:0.5rem">●</span></div>`;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="biometrics-main">
+                <div class="stream-label"><span>Total Seconds Elapsed</span> <span class="live-feed-text">LIVE_FEED</span></div>
+                <div class="large-value" id="val-seconds">-</div>
+            </div>
+            <div class="biometrics-grid">
+                <div class="mini-stat-box"><span class="val" id="val-years">-</span><span class="lbl">YRS</span></div>
+                <div class="mini-stat-box"><span class="val" id="val-months">-</span><span class="lbl">MOS</span></div>
+                <div class="mini-stat-box"><span class="val" id="val-weeks">-</span><span class="lbl">WKS</span></div>
+                <div class="mini-stat-box"><span class="val" id="val-days">-</span><span class="lbl">DAYS</span></div>
+            </div>
+        `;
+        wrap.appendChild(card);
+        elements.resultsSection.appendChild(wrap);
+    }
 
-    const resetContainer = document.createElement('div');
-    resetContainer.style.margin = '2rem 0';
-    resetContainer.innerHTML = `<button onclick="location.reload()" class="secondary-btn" style="width:100%">RE-INITIALIZE SCAN</button>`;
-    elements.resultsSection.appendChild(resetContainer);
+    // 3. Physiological Aggregates
+    if (sections.includes('realtime')) {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<div class="section-label">PHYSIOLOGICAL AGGREGATES</div>`;
+        const grid = document.createElement('div');
+        grid.className = 'stats-2x2';
+        grid.innerHTML = `
+            <div class="grid-item"><div class="lbl">HEARTBEATS</div><div class="val" id="est-heart">-</div></div>
+            <div class="grid-item"><div class="lbl">BREATHS</div><div class="val" id="est-breaths">-</div></div>
+            <div class="grid-item"><div class="lbl">SLEEP CYCLE</div><div class="val" id="est-sleep">-</div><span class="unit">HRS</span></div>
+            <div class="grid-item"><div class="lbl">WORK CYCLE</div><div class="val" id="est-work">-</div><span class="unit">HRS</span></div>
+        `;
+        wrap.appendChild(grid);
+        elements.resultsSection.appendChild(wrap);
+    }
+
+    // 4. Demographic Analysis
+    if (sections.includes('facts')) {
+        const age = calculateAge(state.user.dob).years;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<div class="section-label">DEMOGRAPHIC ANALYSIS</div>`;
+        const list = document.createElement('div');
+        list.className = 'data-list';
+        list.innerHTML = `
+            <div class="list-item">
+                <div class="item-num">01</div>
+                <div class="item-main"><div class="item-title">Global Pop. @ Birth</div><div class="item-subtitle">Historical Estimate</div></div>
+                <div class="item-val">~${(6 + (age/50)).toFixed(1)} Billion</div>
+            </div>
+            <div class="list-item">
+                <div class="item-num Generator">02</div>
+                <div class="item-main"><div class="item-title">People Older</div><div class="item-subtitle">At time of birth</div></div>
+                <div class="item-val">~${(4.5 - (age * 0.05)).toFixed(1)} Billion</div>
+            </div>
+            <div class="list-item">
+                <div class="item-num">03</div>
+                <div class="item-main"><div class="item-title">Name Popularity</div><div class="item-subtitle">Rank within cohort</div></div>
+                <div class="item-val">Top 10</div>
+            </div>
+            <div class="list-item">
+                <div class="item-num">04</div>
+                <div class="item-main"><div class="item-title">Biological Equiv.</div><div class="item-subtitle">Canine scale</div></div>
+                <div class="item-val">${(age * 7).toFixed(1)} Yrs</div>
+            </div>
+        `;
+        wrap.appendChild(list);
+        elements.resultsSection.appendChild(wrap);
+    }
+
+    // 5. Critical Events Log
+    if (sections.includes('livedthrough')) {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<div class="section-label">CRITICAL EVENTS LOG</div>`;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<div class="item-subtitle" style="margin-bottom:12px; display:flex; justify-content:space-between"><span>SOURCE: GLOBAL_HISTORY_DB</span> <span>🔄</span></div><div class="timeline" id="timeline-box"></div>`;
+        wrap.appendChild(card);
+        elements.resultsSection.appendChild(wrap);
+        updateTimeline();
+    }
+
+    // 6. Audio Index & Stellar Align
+    const flex = document.createElement('div');
+    flex.className = 'flex-row';
+
+    if (sections.includes('top')) {
+        const audio = document.createElement('div');
+        audio.className = 'card';
+        audio.style.flex = '1';
+        audio.innerHTML = `
+            <div class="sub-label" style="color:#ff7043">#1 CHART HIT</div>
+            <div style="font-size:1.1rem; margin:8px 0">Smooth</div>
+            <div class="item-subtitle">Santana ft. Rob T.</div>
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:12px 0">
+            <div class="sub-label" style="color:#ff7043">CINEMA TOP</div>
+            <div style="font-size:0.9rem; margin-top:4px">Toy Story 2</div>
+        `;
+        flex.appendChild(audio);
+    }
+
+    if (sections.includes('astronomical')) {
+        const zodiac = getZodiac(new Date(state.user.dob));
+        const stellar = document.createElement('div');
+        stellar.className = 'stellar-card';
+        stellar.innerHTML = `
+            <div class="section-label" style="margin:0 0 8px; padding:0">STELLAR ALIGN</div>
+            <div class="stellar-title">${zodiac.sign}</div>
+            <div class="item-subtitle" style="margin:4px 0 12px">${zodiac.meaning.split(',')[0]}...</div>
+            <span class="badge-stone">DIAMOND</span><div style="position:absolute; bottom:10px; right:10px; opacity:0.1; font-size:2rem;">💧</div>
+        `;
+        flex.appendChild(stellar);
+    }
+    elements.resultsSection.appendChild(flex);
+
+    // 7. Footer Button
+    const footer = document.createElement('div');
+    footer.className = 'footer-actions';
+    footer.innerHTML = `<button class="reinit-btn" onclick="location.reload()"><span>🔄</span> RE-INITIALIZE SCAN</button>`;
+    elements.resultsSection.appendChild(footer);
 
     startLiveUpdates();
 }
 
-function createCollapsible(id, title, isOpen = false) {
-    const section = document.createElement('div');
-    section.className = 'result-section';
-    const header = document.createElement('div');
-    header.className = 'section-header';
-    header.innerHTML = `<span>${title}</span><span class="toggle-icon">${isOpen ? '[-]' : '[+]'}</span>`;
-    const content = document.createElement('div');
-    content.className = `section-content ${isOpen ? '' : 'hidden'}`;
-    header.addEventListener('click', () => {
-        const isHidden = content.classList.toggle('hidden');
-        header.querySelector('.toggle-icon').textContent = isHidden ? '[+]' : '[-]';
-    });
-    section.appendChild(header);
-    section.appendChild(content);
-    return { section, content };
-}
-
-function createSubSection(title) {
-    const container = document.createElement('div');
-    container.className = 'subsection';
-    const header = document.createElement('div');
-    header.className = 'subsection-header';
-    header.innerHTML = `<span>${title}</span><span class="sub-toggle">[+]</span>`;
-    const content = document.createElement('div');
-    content.className = 'subsection-content hidden';
-    header.addEventListener('click', () => {
-        const isHidden = content.classList.toggle('hidden');
-        header.querySelector('.sub-toggle').textContent = isHidden ? '[+]' : '[-]';
-    });
-    container.appendChild(header);
-    container.appendChild(content);
-    return { container, content };
-}
-
-function renderRealTime() {
-    const { section, content } = createCollapsible('realtime', 'REAL TIME BIOMETRICS', true);
-    const dob = new Date(state.user.dob);
-    const dayBorn = dob.toLocaleDateString('en-US', { weekday: 'long' });
-    content.innerHTML = `
-        <p style="margin-bottom:10px">ORIGIN DAY: <span class="accent">${dayBorn.toUpperCase()}</span></p>
-        <div class="stat-grid">
-            <div class="stat-box"><span class="stat-value" id="val-years">-</span><span class="stat-label">YEARS</span></div>
-            <div class="stat-box"><span class="stat-value" id="val-months">-</span><span class="stat-label">MONTHS</span></div>
-            <div class="stat-box"><span class="stat-value" id="val-weeks">-</span><span class="stat-label">WEEKS</span></div>
-            <div class="stat-box"><span class="stat-value" id="val-days">-</span><span class="stat-label">DAYS</span></div>
-            <div class="stat-box"><span class="stat-value" id="val-hours">-</span><span class="stat-label">HOURS</span></div>
-            <div class="stat-box"><span class="stat-value" id="val-minutes">-</span><span class="stat-label">MINUTES</span></div>
-            <div class="stat-box" style="grid-column: span 2"><span class="stat-value live-stat" id="val-seconds">-</span><span class="stat-label">SECONDS ELAPSED</span></div>
-        </div>
-        <div class="subsection">
-            <div class="subsection-header" style="cursor:default"><span>ESTIMATED BIOMETRICS</span></div>
-            <div class="stat-grid">
-                <div class="stat-box"><span class="stat-value" id="est-heart">-</span><span class="stat-label">HEARTBEATS</span></div>
-                <div class="stat-box"><span class="stat-value" id="est-breaths">-</span><span class="stat-label">BREATHS</span></div>
-                <div class="stat-box"><span class="stat-value" id="est-sleep">-</span><span class="stat-label">HOURS ASLEEP</span></div>
-                <div class="stat-box"><span class="stat-value" id="est-eat">-</span><span class="stat-label">HOURS CONSUMING</span></div>
-            </div>
-        </div>
-    `;
-    elements.resultsSection.appendChild(section);
-}
-
-function renderFacts() {
-    const { section, content } = createCollapsible('facts', 'POPULATION & NAME ANALYTICS');
-    const age = calculateAge(state.user.dob).years;
-    content.innerHTML = `
-        <div class="fact-item">GLOBAL POPULATION AT BIRTH: ~${(6 + (age/50)).toFixed(1)} BILLION</div>
-        <div class="fact-item">PEOPLE BORN ON SAME DAY: ~365,000</div>
-        <div class="fact-item">NAME POPULARITY (YEAR BORN): TOP 50</div>
-        <div class="fact-item">NAME POPULARITY (TODAY): TOP 200</div>
-        <div class="fact-item">AGE IN DOG YEARS: ${(age * 7).toFixed(1)}</div>
-        <div class="fact-item">SOLAR ORBITS: ${age}</div>
-        <div class="fact-item">DISTANCE TRAVELLED AROUND SUN: ${(age * 584).toLocaleString()} MILLION KM</div>
-    `;
-    elements.resultsSection.appendChild(section);
-}
-
-async function renderLivedThrough() {
-    const { section, content } = createCollapsible('livedthrough', 'LIVED THROUGH');
-    const hEvents = createSubSection('Historical Events');
-    const oEvents = createSubSection('Once-in-a-Lifetime');
-    const pEvents = createSubSection('Positive Events');
-    const iEvents = createSubSection('Inventions Witnessed');
-    [hEvents, oEvents, pEvents, iEvents].forEach(s => content.appendChild(s.container));
-    hEvents.content.innerHTML = '<div class="fact-item">QUERYING WIKIPEDIA ARCHIVES...</div>';
-    fetchHistoricalEvents().then(events => {
-        hEvents.content.innerHTML = '';
-        events.forEach(e => hEvents.content.innerHTML += `<div class="fact-item">${e}</div>`);
-    });
-    oEvents.content.innerHTML = `
-        <div class="fact-item">Total Solar Eclipse (Multiple)</div>
-        <div class="fact-item">The Turn of the Millennium (2000)</div>
-        <div class="fact-item">First Image of a Black Hole (2019)</div>
-        <div class="fact-item">Launch of Voyager 1 (1977 - still traveling)</div>
-    `;
-    pEvents.content.innerHTML = `
-        <div class="fact-item">Global reduction in extreme poverty</div>
-        <div class="fact-item">Record growth in renewable energy</div>
-        <div class="fact-item">Major medical breakthroughs (mRNA, etc)</div>
-        <div class="fact-item">Global connectivity through the Web</div>
-    `;
-    iEvents.content.innerHTML = `
-        <div class="fact-item">The World Wide Web</div>
-        <div class="fact-item">Smartphone Revolution</div>
-        <div class="fact-item">Electric Vehicles</div>
-        <div class="fact-item">Generative Artificial Intelligence</div>
-        <div class="fact-item">Blockchain & Crypto</div>
-    `;
-    elements.resultsSection.appendChild(section);
-}
-
-function renderTopCharts() {
-    const { section, content } = createCollapsible('top', 'CULTURAL SNAPSHOT');
-    const songs = createSubSection('Top 10 Songs that week');
-    const tv = createSubSection('Top 10 TV Shows that week');
-    const movies = createSubSection('Top 5 Movies that week');
-    [songs, tv, movies].forEach(s => content.appendChild(s.container));
-    songs.content.innerHTML = `
-        <div class="fact-item" style="color:var(--accent-color); font-weight:bold">NO.1 SINGLE: "SMOOTH" - SANTANA FT. ROB THOMAS</div>
-        <hr style="margin:5px 0">
-        <div class="fact-item">2. SAY MY NAME - DESTINY'S CHILD</div>
-        <div class="fact-item">3. MARIA MARIA - SANTANA</div>
-        <div class="fact-item">4. BREATHE - FAITH HILL</div>
-        <div class="fact-item">5. I KNEW I LOVED YOU - SAVAGE GARDEN</div>
-        <div class="fact-item">6. AMAZED - LONESTAR</div>
-        <div class="fact-item">7. EVERYTHING YOU WANT - VERTICAL HORIZON</div>
-        <div class="fact-item">8. BENT - MATCHBOX TWENTY</div>
-        <div class="fact-item">9. IT'S GONNA BE ME - *NSYNC</div>
-        <div class="fact-item">10. BE WITH YOU - ENRIQUE IGLESIAS</div>
-    `;
-    tv.content.innerHTML = `
-        <div class="fact-item" style="color:var(--accent-color); font-weight:bold">NO.1 TV SHOW: FRIENDS</div>
-        <hr style="margin:5px 0">
-        <div class="fact-item">2. ER</div>
-        <div class="fact-item">3. WHO WANTS TO BE A MILLIONAIRE</div>
-        <div class="fact-item">4. FRASIER</div>
-        <div class="fact-item">5. THE WEST WING</div>
-        <div class="fact-item">6. THE PRACTICE</div>
-        <div class="fact-item">7. 60 MINUTES</div>
-        <div class="fact-item">8. TOUCHED BY AN ANGEL</div>
-        <div class="fact-item">9. LAW & ORDER</div>
-        <div class="fact-item">10. EVERYBODY LOVES RAYMOND</div>
-    `;
-    movies.content.innerHTML = `
-        <div class="fact-item" style="color:var(--accent-color); font-weight:bold">NO.1 MOVIE: TOY STORY 2</div>
-        <hr style="margin:5px 0">
-        <div class="fact-item">2. THE GREEN MILE</div>
-        <div class="fact-item">3. STUART LITTLE</div>
-        <div class="fact-item">4. ANY GIVEN SUNDAY</div>
-        <div class="fact-item">5. MAGNOLIA</div>
-    `;
-    elements.resultsSection.appendChild(section);
-}
-
-function renderAstronomical() {
-    const { section, content } = createCollapsible('astronomical', 'ASTRONOMICAL DATA');
-    const zodiac = getZodiac(new Date(state.user.dob));
-    content.innerHTML = `
-        <div class="fact-item">STAR SIGN: <span class="accent">${zodiac.sign.toUpperCase()}</span></div>
-        <div class="fact-item">SIGN MEANING: ${zodiac.meaning}</div>
-        <div class="fact-item">BIRTH STONE: DIAMOND (EST)</div>
-        <div class="fact-item">STONE MEANING: SYMBOL OF ETERNAL LOVE AND INNER STRENGTH</div>
-        <div class="fact-item">MOON PHASE: WANING GIBBOUS (EST)</div>
-    `;
-    elements.resultsSection.appendChild(section);
-}
-
 function calculateAge(dobStr) {
-    const dob = new Date(dobStr);
-    const now = new Date();
-    const diff = now - dob;
+    const diff = new Date() - new Date(dobStr);
     return {
-        years: Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)),
-        minutes: Math.floor(diff / (1000 * 60)),
+        years: Math.floor(diff / 31557600000),
+        minutes: Math.floor(diff / 60000),
         seconds: Math.floor(diff / 1000)
     };
 }
 
 function startLiveUpdates() {
     setInterval(() => {
-        if (!state.user.dob) return;
         const dob = new Date(state.user.dob);
         const now = new Date();
         const diff = now - dob;
         const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        update('val-years', Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)));
-        update('val-months', Math.floor(diff / (1000 * 60 * 60 * 24 * 30.44)));
-        update('val-weeks', Math.floor(diff / (1000 * 60 * 60 * 24 * 7)));
-        update('val-days', Math.floor(diff / (1000 * 60 * 60 * 24)));
-        update('val-hours', Math.floor(diff / (1000 * 60 * 60)));
-        update('val-minutes', Math.floor(diff / (1000 * 60)).toLocaleString());
+
         update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        const mins = diff / (1000 * 60);
-        update('est-heart', Math.floor(mins * 72).toLocaleString());
-        update('est-breaths', Math.floor(mins * 14).toLocaleString());
-        update('est-sleep', Math.floor((mins / 60 / 24) * 8).toLocaleString());
-        update('est-eat', Math.floor((mins / 60 / 24) * 1.5).toLocaleString());
+        update('val-years', Math.floor(diff / 31557600000));
+        update('val-months', Math.floor(diff / 2629800000));
+        update('val-weeks', Math.floor(diff / 604800000));
+        update('val-days', Math.floor(diff / 86400000));
+
+        const mins = diff / 60000;
+        update('est-heart', formatLarge(mins * 72));
+        update('est-breaths', formatLarge(mins * 14));
+        update('est-sleep', formatLarge(mins / 180));
+        update('est-work', formatLarge(mins / 480));
     }, 1000);
 }
 
-async function fetchHistoricalEvents() {
+function formatLarge(num) {
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
+    return Math.floor(num);
+}
+
+async function updateTimeline() {
+    const box = document.getElementById('timeline-box');
     try {
         const m = new Date(state.user.dob).getMonth() + 1;
         const d = new Date(state.user.dob).getDate();
         const response = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${m}/${d}`);
         const data = await response.json();
-        return data.events.slice(0, 10).map(e => `${e.year}: ${e.text}`);
+        const events = data.events.sort((a, b) => b.year - a.year).slice(0, 3);
+        box.innerHTML = events.map(e => `
+            <div class="timeline-item">
+                <div class="time-year">${e.year}</div>
+                <div class="time-line"></div>
+                <div class="time-content">${e.text}</div>
+            </div>
+        `).join('');
     } catch (e) {
-        return ["2007: Launch of the iPhone", "2020: Start of global pandemic", "2012: Mars Rover Landing"];
+        box.innerHTML = '<div class="item-subtitle">FAILED TO ACCESS HISTORICAL ARCHIVES</div>';
     }
 }
 
 function getZodiac(date) {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
+    const day = date.getDate(), month = date.getMonth() + 1;
     const zodiacs = [
-        { sign: 'Capricorn', meaning: 'Disciplined, responsible, and masters of self-control.', start: [12, 22], end: [1, 19] },
-        { sign: 'Aquarius', meaning: 'Progressive, original, independent, and humanitarian.', start: [1, 20], end: [2, 18] },
-        { sign: 'Pisces', meaning: 'Compassionate, artistic, intuitive, and gentle.', start: [2, 19], end: [3, 20] },
-        { sign: 'Aries', meaning: 'Eager, dynamic, quick, and competitive.', start: [3, 21], end: [4, 19] },
-        { sign: 'Taurus', meaning: 'Strong, dependable, sensual, and creative.', start: [4, 20], end: [5, 20] },
-        { sign: 'Gemini', meaning: 'Versatile, expressive, curious, and kind.', start: [5, 21], end: [6, 20] },
-        { sign: 'Cancer', meaning: 'Intuitive, sentimental, compassionate, and protective.', start: [6, 21], end: [7, 22] },
-        { sign: 'Leo', meaning: 'Dramatic, outgoing, self-assured, and fiery.', start: [7, 23], end: [8, 22] },
-        { sign: 'Virgo', meaning: 'Loyal, analytical, kind, and hardworking.', start: [8, 23], end: [9, 22] },
-        { sign: 'Libra', meaning: 'Diplomatic, artistic, and social.', start: [9, 23], end: [10, 22] },
-        { sign: 'Scorpio', meaning: 'Passionate, stubborn, resourceful, and brave.', start: [10, 23], end: [11, 21] },
-        { sign: 'Sagittarius', meaning: 'Extroverted, optimistic, funny, and generous.', start: [11, 22], end: [12, 21] }
+        { sign: 'Capricorn', meaning: 'Disciplined, responsible', start: [12, 22], end: [1, 19] },
+        { sign: 'Aquarius', meaning: 'Progressive, original', start: [1, 20], end: [2, 18] },
+        { sign: 'Pisces', meaning: 'Compassionate, artistic', start: [2, 19], end: [3, 20] },
+        { sign: 'Aries', meaning: 'Eager, dynamic', start: [3, 21], end: [4, 19] },
+        { sign: 'Taurus', meaning: 'Strong, dependable', start: [4, 20], end: [5, 20] },
+        { sign: 'Gemini', meaning: 'Versatile, expressive', start: [5, 21], end: [6, 20] },
+        { sign: 'Cancer', meaning: 'Intuitive, sentimental', start: [6, 21], end: [7, 22] },
+        { sign: 'Leo', meaning: 'Dramatic, outgoing', start: [7, 23], end: [8, 22] },
+        { sign: 'Virgo', meaning: 'Loyal, analytical', start: [8, 23], end: [9, 22] },
+        { sign: 'Libra', meaning: 'Diplomatic, artistic', start: [9, 23], end: [10, 22] },
+        { sign: 'Scorpio', meaning: 'Passionate, stubborn', start: [10, 23], end: [11, 21] },
+        { sign: 'Sagittarius', meaning: 'Extroverted, optimistic', start: [11, 22], end: [12, 21] }
     ];
     for (const z of zodiacs) {
-        const [sm, sd] = z.start; const [em, ed] = z.end;
-        if ((month == sm && day >= sd) || (month == em && day <= ed)) return z;
+        if ((month == z.start[0] && day >= z.start[1]) || (month == z.end[0] && day <= z.end[1])) return z;
     }
     return zodiacs[0];
 }
