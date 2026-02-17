@@ -544,3 +544,24 @@ header {
 .card {
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
+
+/* PDF Export Polish */
+@media print {
+    body { background: #fff !important; color: #000 !important; }
+    .card, .mini-stat-box, .data-list { border-color: #ccc !important; background: #fff !important; color: #000 !important; }
+    .reinit-btn, #settings-btn, .footer-actions { display: none !important; }
+    .section-label { color: #000 !important; border-left-color: #000 !important; }
+    .large-value, .item-val, .val, .time-year { color: #000 !important; }
+    .item-subtitle, .lbl, .sub-label { color: #666 !important; }
+}
+
+/* Ensure sub-sections in results are readable */
+.sub-toggle-arrow {
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+#results-section a:hover {
+    color: var(--accent-amber);
+    border-bottom-style: solid;
+}

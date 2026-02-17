@@ -1,7 +1,7 @@
 const state = {
     user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
     settings: {
-        sections: ['realtime', 'facts', 'livedthrough', 'top', 'biological', 'standing', 'astronomical', 'transit', 'economic', 'tech']
+        sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
     isPuterSignedIn: false
 };
@@ -189,7 +189,7 @@ function renderResults() {
     `;
     elements.resultsSection.appendChild(profile);
 
-    const orderedKeys = ['realtime', 'facts', 'livedthrough', 'top', 'biological', 'standing', 'astronomical', 'transit', 'economic', 'tech'];
+    const orderedKeys = ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge'];
 
     orderedKeys.forEach(key => {
         if (sections.includes(key)) {
@@ -198,20 +198,28 @@ function renderResults() {
                 case 'facts': renderNameFacts(); break;
                 case 'livedthrough': renderEventsLived(); break;
                 case 'top': renderTopMedia(); break;
-                case 'biological': renderBodyFacts(); break;
                 case 'standing': renderGlobalStanding(); break;
                 case 'astronomical': renderStarFacts(); break;
                 case 'transit': renderEarthFacts(); break;
                 case 'economic': renderEconomyFacts(); break;
                 case 'tech': renderTechFacts(); break;
+                case 'network': renderNetworkFacts(); break;
+                case 'eco': renderEcoFacts(); break;
+                case 'power': renderPowerFacts(); break;
+                case 'knowledge': renderKnowledgeFacts(); break;
             }
         }
     });
 
     const footer = document.createElement('div');
     footer.className = 'footer-actions';
-    footer.innerHTML = `<button class="reinit-btn" onclick="location.reload()"><span>🔄</span> NEW ANALYSIS</button>`;
+    footer.innerHTML = `
+        <button class="reinit-btn" onclick="location.reload()" style="margin-bottom: 12px;"><span>🔄</span> NEW ANALYSIS</button>
+        <button class="reinit-btn" id="download-pdf-btn" style="background: var(--accent-cyan);"><span>📄</span> DOWNLOAD PDF SUMMARY</button>
+    `;
     elements.resultsSection.appendChild(footer);
+
+    document.getElementById('download-pdf-btn').addEventListener('click', generatePDF);
 
     startLiveUpdates();
 }
@@ -220,6 +228,9 @@ function renderResults() {
 
 function renderLiveStats() {
     const { container, content } = createCollapsibleSection('LIVE STATS', false);
+    const dob = new Date(state.user.dob);
+    const totalDays = calculateAge(state.user.dob).years * 365;
+
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -238,6 +249,17 @@ function renderLiveStats() {
         </div>
     `;
     content.appendChild(card);
+
+    const subBody = createCollapsibleSubSection('BODY FACTS (BIOMETRIC MILESTONES)', false);
+    subBody.content.className = 'data-list';
+    subBody.content.style.marginTop = '8px';
+    subBody.content.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Hair Grown</div></div><div class="item-val">~${(totalDays * 0.035).toFixed(1)}m</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Nails Grown</div></div><div class="item-val">~${(totalDays * 0.01).toFixed(1)}cm</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Skin Shed</div></div><div class="item-val">~${(calculateAge(state.user.dob).years * 0.7).toFixed(1)}kg</div></div>
+        <div class="list-item"><div class="item-num">04</div><div class="item-main"><div class="item-title">Total Blinks</div></div><div class="item-val" id="est-blinks">-</div></div>
+    `;
+    content.appendChild(subBody.container);
 
     const grid = document.createElement('div');
     grid.className = 'stats-2x2';
@@ -328,22 +350,6 @@ function renderTopMedia() {
     renderTopChartsData();
 }
 
-function renderBodyFacts() {
-    const { container, content } = createCollapsibleSection('BODY FACTS');
-    const totalDays = calculateAge(state.user.dob).years * 365;
-    const age = calculateAge(state.user.dob);
-    const list = document.createElement('div');
-    list.className = 'data-list';
-    list.innerHTML = `
-        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Hair Grown</div></div><div class="item-val">~${(totalDays * 0.035).toFixed(1)}m</div></div>
-        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Nails Grown</div></div><div class="item-val">~${(totalDays * 0.01).toFixed(1)}cm</div></div>
-        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Skin Shed</div></div><div class="item-val">~${(age.years * 0.7).toFixed(1)}kg</div></div>
-        <div class="list-item"><div class="item-num">04</div><div class="item-main"><div class="item-title">Total Blinks</div></div><div class="item-val">~${formatLarge(totalDays * 15 * 60 * 16)}</div></div>
-    `;
-    content.appendChild(list);
-    elements.resultsSection.appendChild(container);
-}
-
 function renderGlobalStanding() {
     const { container, content } = createCollapsibleSection('GLOBAL STANDING');
     const age = calculateAge(state.user.dob).years;
@@ -425,6 +431,62 @@ function renderTechFacts() {
     list.innerHTML = techItems.map((item, i) => `
         <div class="list-item"><div class="item-num">${(i+1).toString().padStart(2, '0')}</div><div class="item-main"><div class="item-title">${item.name}</div></div><div class="item-val">${item.year}</div></div>
     `).join('') || '<div class="list-item">AI ERA DEFINED</div>';
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderNetworkFacts() {
+    const { container, content } = createCollapsibleSection('NETWORK FACTS');
+    const days = calculateAge(state.user.dob).years * 365;
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Estimated Emails Sent</div></div><div class="item-val">~${formatLarge(days * 20)}</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Data Consumed (GB)</div></div><div class="item-val">~${formatLarge(days * 5)} GB</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Internet User Growth</div></div><div class="item-val">+5.2B since birth</div></div>
+    `;
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderEcoFacts() {
+    const { container, content } = createCollapsibleSection('ECO FACTS');
+    const age = calculateAge(state.user.dob).years;
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Carbon Footprint</div></div><div class="item-val">~${(age * 4.8).toFixed(1)} Tonnes CO2</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Waste Produced</div></div><div class="item-val">~${formatLarge(age * 700)} kg</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Offset Trees Required</div></div><div class="item-val">~${(age * 25).toLocaleString()} trees</div></div>
+    `;
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderPowerFacts() {
+    const { container, content } = createCollapsibleSection('POWER FACTS');
+    const days = calculateAge(state.user.dob).years * 365;
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Total Energy Expended</div></div><div class="item-val">~${(days * 8.4).toLocaleString()} MJ</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Steps Taken</div></div><div class="item-val">~${formatLarge(days * 5000)}</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Heart Mechanical Work</div></div><div class="item-val">~${formatLarge(days * 100000)} Joules</div></div>
+    `;
+    content.appendChild(list);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderKnowledgeFacts() {
+    const { container, content } = createCollapsibleSection('KNOWLEDGE FACTS');
+    const days = calculateAge(state.user.dob).years * 365;
+    const list = document.createElement('div');
+    list.className = 'data-list';
+    list.innerHTML = `
+        <div class="list-item"><div class="item-num">01</div><div class="item-main"><div class="item-title">Words Read (EST)</div></div><div class="item-val">~${formatLarge(days * 10000)}</div></div>
+        <div class="list-item"><div class="item-num">02</div><div class="item-main"><div class="item-title">Books Equivalent</div></div><div class="item-val">~${Math.floor(days / 10)}</div></div>
+        <div class="list-item"><div class="item-num">03</div><div class="item-main"><div class="item-title">Human Knowledge Growth</div></div><div class="item-val">~175 Zettabytes</div></div>
+    `;
     content.appendChild(list);
     elements.resultsSection.appendChild(container);
 }
@@ -555,6 +617,8 @@ function startLiveUpdates() {
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
+
+        update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 
@@ -583,4 +647,30 @@ function getZodiac(date) {
     ];
     for (const z of zodiacs) if ((month == z.start[0] && day >= z.start[1]) || (month == z.end[0] && day <= z.end[1])) return z;
     return zodiacs[0];
+}
+
+async function generatePDF() {
+    const element = document.getElementById('results-section');
+    const opt = {
+        margin:       10,
+        filename:     `LifeStats_${state.user.name || 'Citizen'}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, backgroundColor: '#141614' },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    showNotification('GENERATING PDF...');
+
+    // Expand all sections for the PDF
+    const contents = element.querySelectorAll('.section-content');
+    contents.forEach(c => c.classList.remove('hidden'));
+    const subContents = element.querySelectorAll('.card > div > div:not(.sub-label)');
+    // This is a bit hacky, but let's just make everything visible
+    const hiddens = element.querySelectorAll('.hidden');
+    hiddens.forEach(h => h.classList.remove('hidden'));
+
+    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+        window.open(pdf.output('bloburl'), '_blank');
+        showNotification('PDF READY');
+    });
 }

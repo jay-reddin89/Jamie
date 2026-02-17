@@ -6,6 +6,7 @@
     <title>LIFE.STATS_V3</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
@@ -41,6 +42,7 @@
                             <option value="OTHER">OTHER</option>
                         </select>
                     </div>
+                    <div style="margin-bottom: 12px;">
                         <label class="item-subtitle">GEOLOCATION (COUNTRY)</label>
                         <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
@@ -84,12 +86,15 @@
                     <label><input type="checkbox" class="section-toggle" data-section="facts" checked> Name Facts</label>
                     <label><input type="checkbox" class="section-toggle" data-section="livedthrough" checked> Events Lived</label>
                     <label><input type="checkbox" class="section-toggle" data-section="top" checked> Top Media Year Born</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="astronomical" checked> Star Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="economic" checked> Economy Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="biological" checked> Body Facts</label>
                     <label><input type="checkbox" class="section-toggle" data-section="standing" checked> GLOBAL STANDING</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="tech" checked> Tech Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="astronomical" checked> Star Facts</label>
                     <label><input type="checkbox" class="section-toggle" data-section="transit" checked> Earth Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="economic" checked> Economy Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="tech" checked> Tech Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="network" checked> Network Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="eco" checked> Eco Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="power" checked> Power Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="knowledge" checked> Knowledge Facts</label>
                 </div>
 
                 <div style="display: flex; gap: 8px; margin-top: 24px;">
