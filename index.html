@@ -3,101 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JR Life Facts</title>
+    <title>LIFE.STATS_V3</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://js.puter.com/v2/"></script>
 </head>
-<body class="militaristic-ui">
+<body>
     <div id="app">
-        <!-- Header -->
-        <header>
-            <div class="logo">JR LIFE FACTS</div>
-            <button id="settings-btn" class="icon-btn">⚙️</button>
+        <!-- Dynamic Header -->
+        <header id="app-header">
+            <div class="header-info">
+                <div class="logo-v3">LIFE.STATS_V3</div>
+                <div class="sys-id">SYS.ID: 9X-441 // ONLINE</div>
+            </div>
+            <div id="settings-btn" style="cursor: pointer; font-size: 1.2rem;">⋮</div>
         </header>
 
-        <!-- Main Content -->
         <main id="main-content">
-            <!-- User Input Section -->
-            <section id="input-section" class="screen">
-                <div class="hud-panel">
-                    <h2>IDENTIFICATION REQUIRED</h2>
-                    <div class="form-group">
-                        <label>NAME</label>
-                        <input type="text" id="user-name" placeholder="ENTER NAME...">
+            <!-- 1. Input Screen -->
+            <section id="input-section" class="input-screen">
+                <div class="card" style="margin: 0;">
+                    <h3 style="margin-bottom: 16px; font-size: 0.8rem; color: var(--accent-cyan);">AUTHENTICATION REQUIRED</h3>
+                    <div style="margin-bottom: 12px;">
+                        <label class="item-subtitle">SUBJECT NAME</label>
+                        <input type="text" id="user-name" class="input-field" placeholder="ENTER IDENTIFIER">
                     </div>
-                    <div class="form-group">
-                        <label>DATE OF BIRTH</label>
-                        <input type="date" id="user-dob">
+                    <div style="margin-bottom: 12px;">
+                        <label class="item-subtitle">BIRTH SEQUENCE (DOB)</label>
+                        <input type="date" id="user-dob" class="input-field">
                     </div>
-                    <div class="form-group">
-                        <label>GENDER (OPTIONAL)</label>
-                        <select id="user-gender">
-                            <option value="">SELECT...</option>
-                            <option value="male">MALE</option>
-                            <option value="female">FEMALE</option>
-                            <option value="other">OTHER</option>
-                        </select>
+                    <div style="margin-bottom: 12px;">
+                        <label class="item-subtitle">GEOLOCATION (COUNTRY)</label>
+                        <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
-                    <div class="form-group">
-                        <label>COUNTRY (OPTIONAL)</label>
-                        <input type="text" id="user-country" placeholder="ENTER COUNTRY...">
+                    <div style="margin-bottom: 12px;">
+                        <label class="item-subtitle">BIOMETRIC PIC</label>
+                        <input type="file" id="user-pic" class="input-field" accept="image/*">
                     </div>
-                    <div class="form-group">
-                        <label>PROFILE PICTURE</label>
-                        <input type="file" id="user-pic" accept="image/*">
-                        <div id="pic-preview" class="pic-preview"></div>
-                    </div>
-                    <button id="save-user-btn" class="primary-btn">SAVE & INITIALIZE</button>
-                    <button id="generate-btn" class="primary-btn hidden">GENERATE STATS</button>
+                    <button id="save-user-btn" class="btn-primary">INITIALIZE SEQUENCE</button>
+                    <button id="generate-btn" class="btn-primary hidden" style="background: var(--accent-amber);">EXECUTE SCAN</button>
                 </div>
             </section>
 
-            <!-- Loading Section -->
-            <section id="loading-section" class="screen hidden">
-                <div class="hud-panel">
-                    <h2>CRUNCHING DATA...</h2>
-                    <div class="progress-container">
-                        <div id="progress-bar"></div>
+            <!-- 2. Loading Screen -->
+            <section id="loading-section" class="hidden">
+                <div class="loading-box">
+                    <div class="item-subtitle" id="loading-status">SCANNING DATA REPOSITORIES...</div>
+                    <div class="progress-bar">
+                        <div id="progress-bar" class="progress-fill"></div>
                     </div>
-                    <p id="loading-status">SCANNING HISTORICAL RECORDS</p>
                 </div>
             </section>
 
-            <!-- Results Section -->
-            <section id="results-section" class="screen hidden">
-                <!-- Result components will be injected here -->
+            <!-- 3. Results Screen -->
+            <section id="results-section" class="hidden">
+                <!-- Result components will be injected by script.js -->
             </section>
         </main>
 
         <!-- Settings Modal -->
-        <div id="settings-modal" class="modal hidden">
-            <div class="modal-content hud-panel">
-                <h3>SYSTEM SETTINGS</h3>
-                <button id="puter-signin-btn" class="secondary-btn">SIGN IN PUTER</button>
-                <div id="puter-user-info" class="hidden">
-                    CONNECTED: <span id="puter-username"></span>
+        <div id="settings-modal" class="modal hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+            <div class="card" style="width: 85%; max-width: 360px;">
+                <h3 style="color: var(--accent-cyan); font-size: 0.8rem; margin-bottom: 16px;">SYSTEM SETTINGS</h3>
+                <button id="puter-signin-btn" class="btn-primary" style="margin-bottom: 16px;">SIGN IN PUTER</button>
+                <div id="puter-user-info" class="hidden item-subtitle" style="margin-bottom: 16px;">
+                    USER_AUTH: <span id="puter-username" style="color: var(--accent-green);"></span>
                 </div>
 
-                <hr>
-
-                <h4>DATA SECTIONS</h4>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" class="section-toggle" data-section="realtime" checked> REAL TIME</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="facts" checked> FACTS</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="livedthrough" checked> LIVED THROUGH</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="top" checked> TOP CHARTS</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="astronomical" checked> ASTRONOMICAL</label>
+                <h4 class="item-subtitle" style="margin-bottom: 8px;">DATA MODULES</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label><input type="checkbox" class="section-toggle" data-section="realtime" checked> BIOMETRICS</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="facts" checked> DEMOGRAPHICS</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="livedthrough" checked> EVENTS LOG</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="top" checked> AUDIO INDEX</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="astronomical" checked> STELLAR ALIGN</label>
                 </div>
 
-                <div class="modal-actions">
-                    <button id="settings-save-btn" class="primary-btn">APPLY</button>
-                    <button id="settings-cancel-btn" class="secondary-btn">CANCEL</button>
+                <div style="display: flex; gap: 8px; margin-top: 24px;">
+                    <button id="settings-save-btn" class="btn-primary" style="margin: 0; flex: 1;">APPLY</button>
+                    <button id="settings-cancel-btn" class="btn-primary" style="margin: 0; flex: 1; background: var(--surface-variant); color: var(--text-primary);">CLOSE</button>
                 </div>
             </div>
         </div>
 
-        <!-- Notification Toast -->
-        <div id="notification" class="notification hidden"></div>
+        <div id="notification" class="hidden" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent-cyan); color: #000; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; z-index: 2000;"></div>
     </div>
     <script src="script.js"></script>
 </body>
