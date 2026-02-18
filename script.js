@@ -251,33 +251,24 @@ function renderLiveStats() {
     `;
     content.appendChild(heroCard);
 
-    const ageStats = createDataList([
+    const combinedStats = createDataList([
         { label: 'DAY BORN', id: 'val-born-day', value: '-' },
         { label: 'YEARS ELAPSED', id: 'val-years', value: '-' },
         { label: 'MONTHS ELAPSED', id: 'val-months', value: '-' },
         { label: 'WEEKS ELAPSED', id: 'val-weeks', value: '-' },
         { label: 'DAYS ELAPSED', id: 'val-days', value: '-' },
         { label: 'HOURS ELAPSED', id: 'val-hours', value: '-' },
-        { label: 'MINUTES ELAPSED', id: 'val-minutes', value: '-' }
-    ]);
-    content.appendChild(ageStats);
-
-    const subBody = createCollapsibleSubSection('BODY FACTS (BIOMETRIC MILESTONES)', false);
-    subBody.content.appendChild(createDataList([
-        { label: 'Hair Grown', value: `~${(totalDays * 0.035).toFixed(1)}m` },
-        { label: 'Nails Grown', value: `~${(totalDays * 0.01).toFixed(1)}cm` },
-        { label: 'Skin Shed', value: `~${(calculateAge(state.user.dob).years * 0.7).toFixed(1)}kg` },
-        { label: 'Total Blinks', id: 'est-blinks', value: '-' }
-    ]));
-    content.appendChild(subBody.container);
-
-    const bioStats = createDataList([
-        { label: 'HEARTBEATS', id: 'est-heart', value: '-' },
-        { label: 'BREATHS', id: 'est-breaths', value: '-' },
+        { label: 'MINUTES ELAPSED', id: 'val-minutes', value: '-' },
+        { label: 'Hair Grown', value: `~${(totalDays * 0.035).toFixed(1)}m`, subtitle: 'BIOMETRIC MILESTONE' },
+        { label: 'Nails Grown', value: `~${(totalDays * 0.01).toFixed(1)}cm`, subtitle: 'BIOMETRIC MILESTONE' },
+        { label: 'Skin Shed', value: `~${(calculateAge(state.user.dob).years * 0.7).toFixed(1)}kg`, subtitle: 'BIOMETRIC MILESTONE' },
+        { label: 'Total Blinks', id: 'est-blinks', value: '-', subtitle: 'BIOMETRIC MILESTONE' },
+        { label: 'HEARTBEATS', id: 'est-heart', value: '-', subtitle: 'BIOMETRIC MILESTONE' },
+        { label: 'BREATHS', id: 'est-breaths', value: '-', subtitle: 'BIOMETRIC MILESTONE' },
         { label: 'HOURS ASLEEP', id: 'est-sleep', value: '-', subtitle: 'ESTIMATED' },
         { label: 'HOURS CONSUMING', id: 'est-eat', value: '-', subtitle: 'ESTIMATED' }
     ]);
-    content.appendChild(bioStats);
+    content.appendChild(combinedStats);
 
     elements.resultsSection.appendChild(container);
 }
