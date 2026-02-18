@@ -196,6 +196,7 @@ function renderResults() {
             <div class="sub-label">User</div>
             <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>
             <div class="location-label">📍 ${state.user.country || 'UNKNOWN LOCALE'} ${state.user.gender ? `// ${state.user.gender}` : ''}</div>
+            <div class="item-subtitle" style="margin-top: 4px; font-size: 0.7rem; color: var(--accent-cyan);">📅 BORN: ${new Date(state.user.dob).toLocaleDateString('en-GB', { day: '2-digit', month: 'LONG', year: 'numeric' }).toUpperCase()}</div>
         </div>
         <div class="badge-active">ACTIVE</div>
     `;
@@ -549,6 +550,13 @@ function renderTopChartsData() {
     const year = new Date(state.user.dob).getFullYear();
     const era = getEraData(year);
 
+    // Update section labels to include the specific year
+    const card = sBox.closest('.card');
+    const headers = card.querySelectorAll('.sub-label span:first-child');
+    if (headers[0]) headers[0].textContent = `TOP 10 TRACKS OF ${year}`;
+    if (headers[1]) headers[1].textContent = `TOP 10 TV SHOWS OF ${year}`;
+    if (headers[2]) headers[2].textContent = `TOP 5 BOX OFFICE HITS OF ${year}`;
+
     const createMediaList = (items, type) => {
         const baseUrl = type === 'song' ? 'https://www.youtube.com/results?search_query=' : 'https://www.imdb.com/find?q=';
         return items.map((item, i) => `
@@ -570,10 +578,79 @@ function renderTopChartsData() {
 }
 
 function getEraData(year) {
-    if (year >= 2010) {
+    const y = parseInt(year);
+    if (y >= 2020) {
         return {
             songs: [
-                { label: "Rolling in the Deep", year: 2010, length: "3:48", top: "7 Weeks" },
+                { label: "Blinding Lights", year: 2020, length: "3:20", top: "4 Weeks" },
+                { label: "Stay", year: 2021, length: "2:21", top: "7 Weeks" },
+                { label: "Bad Habits", year: 2021, length: "3:51", top: "11 Weeks" },
+                { label: "Easy on Me", year: 2021, length: "3:44", top: "10 Weeks" },
+                { label: "Heat Waves", year: 2020, length: "3:58", top: "5 Weeks" },
+                { label: "Butter", year: 2021, length: "2:44", top: "10 Weeks" },
+                { label: "Save Your Tears", year: 2020, length: "3:35", top: "2 Weeks" },
+                { label: "Drivers License", year: 2021, length: "4:02", top: "8 Weeks" },
+                { label: "Levitating", year: 2020, length: "3:23", top: "Top 5" },
+                { label: "Good 4 U", year: 2021, length: "2:58", top: "1 Week" }
+            ],
+            tv: [
+                { label: "Squid Game", year: 2021, length: "55m", top: "#1 Global" },
+                { label: "Ted Lasso", year: 2020, length: "30m", top: "Emmy Winner" },
+                { label: "Succession", year: 2021, length: "60m", top: "Critical Peak" },
+                { label: "The Mandalorian", year: 2020, length: "40m", top: "Top Streaming" },
+                { label: "Stranger Things 4", year: 2022, length: "75m", top: "Cultural Peak" },
+                { label: "The Last of Us", year: 2023, length: "50m", top: "#1 Adaptation" },
+                { label: "House of the Dragon", year: 2022, length: "60m", top: "#1 Fantasy" },
+                { label: "Severance", year: 2022, length: "50m", top: "Sci-Fi Top" },
+                { label: "The Bear", year: 2022, length: "30m", top: "Top Drama" },
+                { label: "Yellowstone", year: 2021, length: "45m", top: "#1 Cable" }
+            ],
+            movies: [
+                { label: "Avatar: The Way of Water", year: 2022, length: "192m", top: "$2.3B" },
+                { label: "Spider-Man: No Way Home", year: 2021, length: "148m", top: "$1.9B" },
+                { label: "Top Gun: Maverick", year: 2022, length: "130m", top: "$1.4B" },
+                { label: "The Super Mario Bros. Movie", year: 2023, length: "92m", top: "$1.3B" },
+                { label: "Barbie", year: 2023, length: "114m", top: "$1.4B" }
+            ]
+        };
+    } else if (y >= 2015) {
+        return {
+            songs: [
+                { label: "Shape of You", year: 2017, length: "3:53", top: "12 Weeks" },
+                { label: "Despacito", year: 2017, length: "3:48", top: "16 Weeks" },
+                { label: "God's Plan", year: 2018, length: "3:18", top: "11 Weeks" },
+                { label: "Old Town Road", year: 2019, length: "1:53", top: "19 Weeks" },
+                { label: "Uptown Funk", year: 2015, length: "4:30", top: "14 Weeks" },
+                { label: "Hello", year: 2015, length: "4:55", top: "10 Weeks" },
+                { label: "Closer", year: 2016, length: "4:04", top: "12 Weeks" },
+                { label: "One Dance", year: 2016, length: "2:54", top: "10 Weeks" },
+                { label: "7 Rings", year: 2019, length: "2:58", top: "8 Weeks" },
+                { label: "Bad Guy", year: 2019, length: "3:14", top: "1 Week" }
+            ],
+            tv: [
+                { label: "Game of Thrones", year: 2015, length: "55m", top: "#1 Drama" },
+                { label: "Stranger Things", year: 2016, length: "50m", top: "#1 Sci-Fi" },
+                { label: "The Crown", year: 2016, length: "60m", top: "Award Winner" },
+                { label: "Westworld", year: 2016, length: "60m", top: "Cerebral Hit" },
+                { label: "Atlanta", year: 2016, length: "30m", top: "Critical Darling" },
+                { label: "Fleabag", year: 2019, length: "25m", top: "Comedy Peak" },
+                { label: "Chernobyl", year: 2019, length: "60m", top: "#1 Mini-series" },
+                { label: "Better Call Saul", year: 2015, length: "45m", top: "Spinoff Peak" },
+                { label: "BoJack Horseman", year: 2015, length: "25m", top: "Anim. Peak" },
+                { label: "Veep", year: 2015, length: "30m", top: "Emmy Peak" }
+            ],
+            movies: [
+                { label: "Avengers: Endgame", year: 2019, length: "181m", top: "$2.8B" },
+                { label: "Avengers: Infinity War", year: 2018, length: "149m", top: "$2.0B" },
+                { label: "Star Wars: The Force Awakens", year: 2015, length: "138m", top: "$2.0B" },
+                { label: "Jurassic World", year: 2015, length: "124m", top: "$1.6B" },
+                { label: "The Lion King", year: 2019, length: "118m", top: "$1.6B" }
+            ]
+        };
+    } else if (y >= 2010) {
+        return {
+            songs: [
+                { label: "Rolling in the Deep", year: 2011, length: "3:48", top: "7 Weeks" },
                 { label: "Party Rock Anthem", year: 2011, length: "4:23", top: "6 Weeks" },
                 { label: "Firework", year: 2010, length: "3:48", top: "4 Weeks" },
                 { label: "E.T.", year: 2011, length: "3:26", top: "5 Weeks" },
@@ -600,14 +677,48 @@ function getEraData(year) {
                 { label: "Avatar", year: 2010, length: "162m", top: "$2.7B" },
                 { label: "Toy Story 3", year: 2010, length: "103m", top: "$1.0B" },
                 { label: "Alice in Wonderland", year: 2010, length: "108m", top: "$1.0B" },
-                { label: "Harry Potter and the Deathly Hallows", year: 2010, length: "146m", top: "$960M" },
+                { label: "Harry Potter and the Deathly Hallows", year: 2011, length: "146m", top: "$1.3B" },
                 { label: "Inception", year: 2010, length: "148m", top: "$828M" }
             ]
         };
-    } else if (year >= 2000) {
+    } else if (y >= 2005) {
         return {
             songs: [
-                { label: "Hanging by a Moment", year: 2000, length: "3:36", top: "1 Week" },
+                { label: "Bad Day", year: 2006, length: "3:54", top: "5 Weeks" },
+                { label: "SexyBack", year: 2006, length: "4:02", top: "7 Weeks" },
+                { label: "Irreplaceable", year: 2006, length: "3:47", top: "10 Weeks" },
+                { label: "Umbrella", year: 2007, length: "4:35", top: "7 Weeks" },
+                { label: "Low", year: 2008, length: "3:50", top: "10 Weeks" },
+                { label: "Bleeding Love", year: 2008, length: "4:22", top: "7 Weeks" },
+                { label: "I Kissed a Girl", year: 2008, length: "2:59", top: "7 Weeks" },
+                { label: "Poker Face", year: 2009, length: "3:58", top: "1 Week" },
+                { label: "Boom Boom Pow", year: 2009, length: "4:11", top: "12 Weeks" },
+                { label: "I Gotta Feeling", year: 2009, length: "4:49", top: "14 Weeks" }
+            ],
+            tv: [
+                { label: "American Idol", year: 2005, length: "60m", top: "#1 Overall" },
+                { label: "Desperate Housewives", year: 2005, length: "43m", top: "#1 Drama" },
+                { label: "Lost", year: 2005, length: "42m", top: "Top Mystery" },
+                { label: "The Office", year: 2005, length: "22m", top: "Comedy Hit" },
+                { label: "Grey's Anatomy", year: 2005, length: "43m", top: "Top Medical" },
+                { label: "CSI", year: 2005, length: "44m", top: "#1 Procedural" },
+                { label: "Dancing with the Stars", year: 2005, length: "85m", top: "Reality Hit" },
+                { label: "House", year: 2005, length: "44m", top: "Critical Hit" },
+                { label: "30 Rock", year: 2006, length: "22m", top: "Emmy Winner" },
+                { label: "Mad Men", year: 2007, length: "47m", top: "Cable Peak" }
+            ],
+            movies: [
+                { label: "Star Wars: Episode III", year: 2005, length: "140m", top: "$848M" },
+                { label: "Pirates of the Caribbean: DMC", year: 2006, length: "151m", top: "$1.0B" },
+                { label: "Spider-Man 3", year: 2007, length: "139m", top: "$890M" },
+                { label: "The Dark Knight", year: 2008, length: "152m", top: "$1.0B" },
+                { label: "Avatar", year: 2009, length: "162m", top: "$2.7B" }
+            ]
+        };
+    } else if (y >= 2000) {
+        return {
+            songs: [
+                { label: "Hanging by a Moment", year: 2001, length: "3:36", top: "1 Week" },
                 { label: "Fallin'", year: 2001, length: "3:30", top: "6 Weeks" },
                 { label: "All for You", year: 2001, length: "4:24", top: "7 Weeks" },
                 { label: "Drops of Jupiter", year: 2001, length: "4:20", top: "#5 Peak" },
@@ -638,72 +749,174 @@ function getEraData(year) {
                 { label: "What Women Want", year: 2000, length: "127m", top: "$374M" }
             ]
         };
-    } else if (year >= 1990) {
+    } else if (y >= 1995) {
         return {
             songs: [
-                { label: "Smooth", year: 1999, length: "4:54", top: "12 Weeks" },
-                { label: "Say My Name", year: 1999, length: "4:31", top: "3 Weeks" },
-                { label: "Maria Maria", year: 1999, length: "4:22", top: "10 Weeks" },
-                { label: "Breathe", year: 1999, length: "4:10", top: "18 Weeks" },
-                { label: "I Knew I Loved You", year: 1999, length: "4:10", top: "4 Weeks" },
-                { label: "Amazed", year: 1999, length: "4:00", top: "2 Weeks" },
-                { label: "Everything You Want", year: 1999, length: "4:17", top: "1 Week" },
-                { label: "Bent", year: 2000, length: "4:16", top: "1 Week" },
-                { label: "It's Gonna Be Me", year: 2000, length: "3:11", top: "2 Weeks" },
-                { label: "Be With You", year: 2000, length: "3:40", top: "3 Weeks" }
+                { label: "Macarena", year: 1996, length: "3:43", top: "14 Weeks" },
+                { label: "Candle in the Wind", year: 1997, length: "3:47", top: "14 Weeks" },
+                { label: "Believe", year: 1999, length: "3:59", top: "4 Weeks" },
+                { label: "No Diggity", year: 1996, length: "4:12", top: "4 Weeks" },
+                { label: "Wannabe", year: 1997, length: "2:52", top: "4 Weeks" },
+                { label: "Truly Madly Deeply", year: 1998, length: "4:37", top: "2 Weeks" },
+                { label: "...Baby One More Time", year: 1999, length: "3:30", top: "2 Weeks" },
+                { label: "I Don't Want to Miss a Thing", year: 1998, length: "4:59", top: "4 Weeks" },
+                { label: "Gangsta's Paradise", year: 1995, length: "4:00", top: "3 Weeks" },
+                { label: "Killing Me Softly", year: 1996, length: "4:58", top: "2 Weeks" }
             ],
             tv: [
-                { label: "Friends", year: 1999, length: "22m", top: "#1 Comedy" },
-                { label: "ER", year: 1999, length: "44m", top: "#1 Drama" },
-                { label: "Who Wants to Be a Millionaire", year: 1999, length: "60m", top: "#1 Quiz" },
-                { label: "Frasier", year: 1999, length: "22m", top: "Top 10" },
-                { label: "The West Wing", year: 1999, length: "44m", top: "Critical Peak" },
-                { label: "The Practice", year: 1999, length: "44m", top: "Top 10" },
-                { label: "60 Minutes", year: 1999, length: "60m", top: "#1 News" },
-                { label: "Touched by an Angel", year: 1999, length: "44m", top: "Top 10" },
-                { label: "Law & Order", year: 1999, length: "44m", top: "Top 15" },
-                { label: "Everybody Loves Raymond", year: 1999, length: "22m", top: "Top 20" }
+                { label: "Seinfeld", year: 1998, length: "22m", top: "#1 Sitcom" },
+                { label: "ER", year: 1996, length: "44m", top: "#1 Drama" },
+                { label: "Friends", year: 1997, length: "22m", top: "Top 5" },
+                { label: "Home Improvement", year: 1995, length: "22m", top: "Top 10" },
+                { label: "Monday Night Football", year: 1996, length: "180m", top: "#1 Sports" },
+                { label: "Frasier", year: 1995, length: "22m", top: "Critical Hit" },
+                { label: "NYPD Blue", year: 1995, length: "44m", top: "Top Drama" },
+                { label: "X-Files", year: 1996, length: "44m", top: "Sci-Fi Top" },
+                { label: "South Park", year: 1997, length: "22m", top: "Cable Revolution" },
+                { label: "Ally McBeal", year: 1997, length: "44m", top: "Legal Hit" }
             ],
             movies: [
-                { label: "Toy Story 2", year: 1999, length: "92m", top: "$497M" },
-                { label: "The Green Mile", year: 1999, length: "189m", top: "$286M" },
-                { label: "Stuart Little", year: 1999, length: "84m", top: "$300M" },
-                { label: "Any Given Sunday", year: 1999, length: "162m", top: "$100M" },
-                { label: "Magnolia", year: 1999, length: "188m", top: "Cult Classic" }
+                { label: "Titanic", year: 1997, length: "194m", top: "$2.2B" },
+                { label: "Star Wars: Phantom Menace", year: 1999, length: "136m", top: "$1.0B" },
+                { label: "Jurassic Park: Lost World", year: 1997, length: "129m", top: "$618M" },
+                { label: "Independence Day", year: 1996, length: "145m", top: "$817M" },
+                { label: "Toy Story", year: 1995, length: "81m", top: "$373M" }
+            ]
+        };
+    } else if (y >= 1990) {
+        return {
+            songs: [
+                { label: "I Will Always Love You", year: 1992, length: "4:31", top: "14 Weeks" },
+                { label: "End of the Road", year: 1992, length: "5:50", top: "13 Weeks" },
+                { label: "The Sign", year: 1994, length: "3:09", top: "6 Weeks" },
+                { label: "I'd Do Anything for Love", year: 1993, length: "5:13", top: "5 Weeks" },
+                { label: "(Everything I Do) I Do It for You", year: 1991, length: "6:33", top: "7 Weeks" },
+                { label: "Ice Ice Baby", year: 1990, length: "4:31", top: "1 Week" },
+                { label: "Black or White", year: 1991, length: "3:22", top: "7 Weeks" },
+                { label: "Jump", year: 1992, length: "3:15", top: "8 Weeks" },
+                { label: "Vogue", year: 1990, length: "4:49", top: "3 Weeks" },
+                { label: "Smells Like Teen Spirit", year: 1991, length: "5:01", top: "Rock Revolution" }
+            ],
+            tv: [
+                { label: "Cheers", year: 1991, length: "22m", top: "#1 Sitcom" },
+                { label: "Roseanne", year: 1990, length: "22m", top: "#1 Comedy" },
+                { label: "60 Minutes", year: 1992, length: "60m", top: "#1 News" },
+                { label: "The Simpsons", year: 1990, length: "22m", top: "Animation Peak" },
+                { label: "Home Improvement", year: 1991, length: "22m", top: "Top 5" },
+                { label: "Northern Exposure", year: 1992, length: "44m", top: "Critical Hit" },
+                { label: "L.A. Law", year: 1990, length: "44m", top: "Top Drama" },
+                { label: "Seinfeld", year: 1990, length: "22m", top: "Comedy Revolution" },
+                { label: "Star Trek: TNG", year: 1991, length: "44m", top: "Sci-Fi Top" },
+                { label: "Beverly Hills 90210", year: 1990, length: "44m", top: "Teen Hit" }
+            ],
+            movies: [
+                { label: "Home Alone", year: 1990, length: "103m", top: "$476M" },
+                { label: "Terminator 2: Judgment Day", year: 1991, length: "137m", top: "$520M" },
+                { label: "Jurassic Park", year: 1993, length: "127m", top: "$1.0B" },
+                { label: "The Lion King", year: 1994, length: "88m", top: "$968M" },
+                { label: "Forrest Gump", year: 1994, length: "142m", top: "$677M" }
+            ]
+        };
+    } else if (y >= 1985) {
+        return {
+            songs: [
+                { label: "Careless Whisper", year: 1985, length: "5:00", top: "3 Weeks" },
+                { label: "That's What Friends Are For", year: 1986, length: "4:15", top: "4 Weeks" },
+                { label: "Walk Like an Egyptian", year: 1987, length: "3:24", top: "4 Weeks" },
+                { label: "Faith", year: 1988, length: "3:16", top: "4 Weeks" },
+                { label: "Look Away", year: 1989, length: "4:01", top: "2 Weeks" },
+                { label: "Money for Nothing", year: 1985, length: "8:26", top: "3 Weeks" },
+                { label: "Papa Don't Preach", year: 1986, length: "4:29", top: "2 Weeks" },
+                { label: "With or Without You", year: 1987, length: "4:56", top: "3 Weeks" },
+                { label: "Never Gonna Give You Up", year: 1988, length: "3:32", top: "2 Weeks" },
+                { label: "Straight Up", year: 1989, length: "4:11", top: "3 Weeks" }
+            ],
+            tv: [
+                { label: "The Cosby Show", year: 1985, length: "22m", top: "#1 Sitcom" },
+                { label: "Family Ties", year: 1986, length: "22m", top: "Top 5" },
+                { label: "Golden Girls", year: 1985, length: "22m", top: "Comedy Hit" },
+                { label: "Miami Vice", year: 1985, length: "48m", top: "Style Peak" },
+                { label: "Cheers", year: 1987, length: "22m", top: "Top Sitcom" },
+                { label: "Moonlighting", year: 1986, length: "48m", top: "Critical Hit" },
+                { label: "Knight Rider", year: 1985, length: "48m", top: "Action Hit" },
+                { label: "MacGyver", year: 1985, length: "48m", top: "Iconic Drama" },
+                { label: "Roseanne", year: 1988, length: "22m", top: "#1 Show" },
+                { label: "The Wonder Years", year: 1988, length: "22m", top: "Emmy Winner" }
+            ],
+            movies: [
+                { label: "Back to the Future", year: 1985, length: "116m", top: "$381M" },
+                { label: "Top Gun", year: 1986, length: "110m", top: "$356M" },
+                { label: "Fatal Attraction", year: 1987, length: "119m", top: "$320M" },
+                { label: "Rain Man", year: 1988, length: "133m", top: "$412M" },
+                { label: "Batman", year: 1989, length: "126m", top: "$411M" }
+            ]
+        };
+    } else if (y >= 1980) {
+        return {
+            songs: [
+                { label: "Call Me", year: 1980, length: "3:32", top: "6 Weeks" },
+                { label: "Bette Davis Eyes", year: 1981, length: "3:47", top: "9 Weeks" },
+                { label: "Physical", year: 1982, length: "3:44", top: "10 Weeks" },
+                { label: "Every Breath You Take", year: 1983, length: "4:13", top: "8 Weeks" },
+                { label: "When Doves Cry", year: 1984, length: "3:47", top: "5 Weeks" },
+                { label: "Upside Down", year: 1980, length: "4:05", top: "4 Weeks" },
+                { label: "Endless Love", year: 1981, length: "4:27", top: "9 Weeks" },
+                { label: "Eye of the Tiger", year: 1982, length: "4:04", top: "6 Weeks" },
+                { label: "Billie Jean", year: 1983, length: "4:54", top: "7 Weeks" },
+                { label: "Like a Virgin", year: 1984, length: "3:38", top: "6 Weeks" }
+            ],
+            tv: [
+                { label: "Dallas", year: 1980, length: "45m", top: "#1 Drama" },
+                { label: "60 Minutes", year: 1981, length: "60m", top: "#1 News" },
+                { label: "Dynasty", year: 1981, length: "45m", top: "Top Soap" },
+                { label: "M*A*S*H", year: 1983, length: "25m", top: "Record Finale" },
+                { label: "Cheers", year: 1982, length: "22m", top: "Comedy Hit" },
+                { label: "The A-Team", year: 1983, length: "48m", top: "Action Hit" },
+                { label: "Hill Street Blues", year: 1981, length: "48m", top: "Critical Peak" },
+                { label: "Magnum, P.I.", year: 1980, length: "48m", top: "Top Procedural" },
+                { label: "Knight Rider", year: 1982, length: "48m", top: "Sci-Fi Hit" },
+                { label: "Simon & Simon", year: 1981, length: "48m", top: "Top 10" }
+            ],
+            movies: [
+                { label: "The Empire Strikes Back", year: 1980, length: "124m", top: "$538M" },
+                { label: "Raiders of the Lost Ark", year: 1981, length: "115m", top: "$389M" },
+                { label: "E.T. the Extra-Terrestrial", year: 1982, length: "115m", top: "$792M" },
+                { label: "Return of the Jedi", year: 1983, length: "131m", top: "$475M" },
+                { label: "Beverly Hills Cop", year: 1984, length: "105m", top: "$316M" }
             ]
         };
     } else {
         return {
             songs: [
-                { label: "Every Breath You Take", year: 1983, length: "4:13", top: "8 Weeks" },
-                { label: "Billie Jean", year: 1983, length: "4:54", top: "7 Weeks" },
-                { label: "Flashdance... What a Feeling", year: 1983, length: "3:53", top: "6 Weeks" },
-                { label: "Down Under", year: 1983, length: "3:42", top: "4 Weeks" },
-                { label: "Beat It", year: 1983, length: "4:18", top: "3 Weeks" },
-                { label: "Total Eclipse of the Heart", year: 1983, length: "4:30", top: "4 Weeks" },
-                { label: "Maneater", year: 1983, length: "4:33", top: "4 Weeks" },
-                { label: "Baby, Come to Me", year: 1983, length: "3:30", top: "2 Weeks" },
-                { label: "Maniac", year: 1983, length: "4:04", top: "2 Weeks" },
-                { label: "Sweet Dreams", year: 1983, length: "3:36", top: "1 Week" }
+                { label: "Bridge Over Troubled Water", year: 1970, length: "4:52", top: "6 Weeks" },
+                { label: "Maggie May", year: 1971, length: "5:15", top: "5 Weeks" },
+                { label: "The First Time Ever I Saw Your Face", year: 1972, length: "4:15", top: "6 Weeks" },
+                { label: "Tie a Yellow Ribbon", year: 1973, length: "3:24", top: "4 Weeks" },
+                { label: "The Way We Were", year: 1974, length: "3:29", top: "3 Weeks" },
+                { label: "Love Will Keep Us Together", year: 1975, length: "3:24", top: "4 Weeks" },
+                { label: "Tonight's the Night", year: 1976, length: "3:55", top: "8 Weeks" },
+                { label: "You Light Up My Life", year: 1977, length: "3:31", top: "10 Weeks" },
+                { label: "Shadow Dancing", year: 1978, length: "4:34", top: "7 Weeks" },
+                { label: "My Sharona", year: 1979, length: "4:00", top: "6 Weeks" }
             ],
             tv: [
-                { label: "60 Minutes", year: 1983, length: "60m", top: "#1 News" },
-                { label: "Dallas", year: 1983, length: "45m", top: "#1 Soap" },
-                { label: "M*A*S*H", year: 1983, length: "25m", top: "Finale Peak" },
-                { label: "Magnum, P.I.", year: 1983, length: "48m", top: "Top 5" },
-                { label: "Dynasty", year: 1983, length: "45m", top: "Top 10" },
-                { label: "Three's Company", year: 1983, length: "25m", top: "Top 10" },
-                { label: "Simon & Simon", year: 1983, length: "48m", top: "Top 10" },
-                { label: "Falcon Crest", year: 1983, length: "45m", top: "Top 10" },
-                { label: "The Love Boat", year: 1983, length: "45m", top: "Top 15" },
-                { label: "The A-Team", year: 1983, length: "48m", top: "Top 15" }
+                { label: "All in the Family", year: 1971, length: "25m", top: "#1 Show" },
+                { label: "The Waltons", year: 1973, length: "50m", top: "Top Drama" },
+                { label: "Sanford and Son", year: 1972, length: "25m", top: "#1 Sitcom" },
+                { label: "M*A*S*H", year: 1972, length: "25m", top: "Comedy Hit" },
+                { label: "Happy Days", year: 1974, length: "25m", top: "Cultural Peak" },
+                { label: "Laverne & Shirley", year: 1976, length: "25m", top: "#1 Comedy" },
+                { label: "Three's Company", year: 1977, length: "25m", top: "Top Sitcom" },
+                { label: "Little House on the Prairie", year: 1974, length: "50m", top: "Top Family" },
+                { label: "Hawaii Five-O", year: 1970, length: "50m", top: "Top Crime" },
+                { label: "Columbo", year: 1971, length: "75m", top: "Critical Hit" }
             ],
             movies: [
-                { label: "Return of the Jedi", year: 1983, length: "131m", top: "$475M" },
-                { label: "Terms of Endearment", year: 1983, length: "132m", top: "$108M" },
-                { label: "Flashdance", year: 1983, length: "95m", top: "$201M" },
-                { label: "Trading Places", year: 1983, length: "116m", top: "$90M" },
-                { label: "WarGames", year: 1983, length: "114m", top: "$79M" }
+                { label: "The Godfather", year: 1972, length: "175m", top: "$246M" },
+                { label: "The Exorcist", year: 1973, length: "122m", top: "$441M" },
+                { label: "Jaws", year: 1975, length: "124m", top: "$472M" },
+                { label: "Star Wars", year: 1977, length: "121m", top: "$775M" },
+                { label: "Grease", year: 1978, length: "110m", top: "$396M" }
             ]
         };
     }
