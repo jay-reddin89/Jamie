@@ -1,7 +1,7 @@
 const state = {
     user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
     settings: {
-        sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
+        sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge', 'namemeaning', 'nameworld', 'namejokes']
     },
     isPuterSignedIn: false
 };
@@ -193,7 +193,7 @@ function renderResults() {
     profile.innerHTML = `
         <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img">` : '🧬'}</div>
         <div class="profile-details">
-            <div class="sub-label">SUBJECT</div>
+            <div class="sub-label">User</div>
             <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>
             <div class="location-label">📍 ${state.user.country || 'UNKNOWN LOCALE'} ${state.user.gender ? `// ${state.user.gender}` : ''}</div>
         </div>
@@ -201,7 +201,7 @@ function renderResults() {
     `;
     elements.resultsSection.appendChild(profile);
 
-    const orderedKeys = ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge'];
+    const orderedKeys = ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge', 'namemeaning', 'nameworld', 'namejokes'];
 
     orderedKeys.forEach(key => {
         if (sections.includes(key)) {
@@ -219,6 +219,9 @@ function renderResults() {
                 case 'eco': renderEcoFacts(); break;
                 case 'power': renderPowerFacts(); break;
                 case 'knowledge': renderKnowledgeFacts(); break;
+                case 'namemeaning': renderNameMeaning(); break;
+                case 'nameworld': renderNameWorld(); break;
+                case 'namejokes': renderNameJokes(); break;
             }
         }
     });
@@ -548,10 +551,15 @@ function renderTopChartsData() {
 
     const createMediaList = (items, type) => {
         const baseUrl = type === 'song' ? 'https://www.youtube.com/results?search_query=' : 'https://www.imdb.com/find?q=';
-        return items.map((s, i) => `
+        return items.map((item, i) => `
             <div class="list-item padding-xs-rect font-size-xs border-subtle">
-                <span class="item-num">${i+1}</span>
-                <a href="${baseUrl}${encodeURIComponent(s)}" target="_blank" class="link-no-decor flex-1 margin-left-sm link-dashed">${s}</a>
+                <span class="item-num">${(i + 1).toString().padStart(2, '0')}</span>
+                <div class="item-main">
+                    <a href="${baseUrl}${encodeURIComponent(item.label)}" target="_blank" class="link-no-decor display-block link-dashed">${item.label}</a>
+                    <div class="item-subtitle" style="font-size: 0.65rem; color: var(--md-sys-color-outline); margin-top: 2px;">
+                        YEAR: ${item.year} // LENGTH: ${item.length} // TOP: ${item.top}
+                    </div>
+                </div>
             </div>
         `).join('');
     };
@@ -564,28 +572,272 @@ function renderTopChartsData() {
 function getEraData(year) {
     if (year >= 2010) {
         return {
-            songs: ["Rolling in the Deep", "Party Rock Anthem", "Firework", "E.T.", "Give Me Everything", "Grenade", "Super Bass", "Moves Like Jagger", "The Show Goes On", "The Lazy Song"],
-            tv: ["Modern Family", "The Big Bang Theory", "Grey's Anatomy", "Glee", "Dancing with the Stars", "NCIS", "American Idol", "The Voice", "Game of Thrones", "Breaking Bad"],
-            movies: ["Avatar", "Toy Story 3", "Alice in Wonderland", "Harry Potter and the Deathly Hallows", "Inception"]
+            songs: [
+                { label: "Rolling in the Deep", year: 2010, length: "3:48", top: "7 Weeks" },
+                { label: "Party Rock Anthem", year: 2011, length: "4:23", top: "6 Weeks" },
+                { label: "Firework", year: 2010, length: "3:48", top: "4 Weeks" },
+                { label: "E.T.", year: 2011, length: "3:26", top: "5 Weeks" },
+                { label: "Give Me Everything", year: 2011, length: "4:12", top: "1 Week" },
+                { label: "Grenade", year: 2010, length: "3:42", top: "4 Weeks" },
+                { label: "Super Bass", year: 2011, length: "3:20", top: "#3 Peak" },
+                { label: "Moves Like Jagger", year: 2011, length: "3:21", top: "4 Weeks" },
+                { label: "The Show Goes On", year: 2010, length: "3:56", top: "#9 Peak" },
+                { label: "The Lazy Song", year: 2011, length: "3:09", top: "#4 Peak" }
+            ],
+            tv: [
+                { label: "Modern Family", year: 2010, length: "22m", top: "#1 Comedy" },
+                { label: "The Big Bang Theory", year: 2010, length: "21m", top: "#1 Sitcom" },
+                { label: "Grey's Anatomy", year: 2010, length: "43m", top: "#1 Drama" },
+                { label: "Glee", year: 2010, length: "44m", top: "Top 10" },
+                { label: "Dancing with the Stars", year: 2010, length: "85m", top: "#1 Reality" },
+                { label: "NCIS", year: 2010, length: "44m", top: "#1 Scripted" },
+                { label: "American Idol", year: 2010, length: "60m", top: "#1 Overall" },
+                { label: "The Voice", year: 2011, length: "60m", top: "Top Rated" },
+                { label: "Game of Thrones", year: 2011, length: "55m", top: "Cult Classic" },
+                { label: "Breaking Bad", year: 2010, length: "47m", top: "Critical Peak" }
+            ],
+            movies: [
+                { label: "Avatar", year: 2010, length: "162m", top: "$2.7B" },
+                { label: "Toy Story 3", year: 2010, length: "103m", top: "$1.0B" },
+                { label: "Alice in Wonderland", year: 2010, length: "108m", top: "$1.0B" },
+                { label: "Harry Potter and the Deathly Hallows", year: 2010, length: "146m", top: "$960M" },
+                { label: "Inception", year: 2010, length: "148m", top: "$828M" }
+            ]
         };
     } else if (year >= 2000) {
         return {
-            songs: ["Hanging by a Moment", "Fallin'", "All for You", "Drops of Jupiter", "I'm Real", "Smooth Criminal", "Bootylicious", "U Remind Me", "Hero", "Lady Marmalade"],
-            tv: ["Survivor", "ER", "Friends", "CSI: Crime Scene Investigation", "Will & Grace", "The West Wing", "Monday Night Football", "Everybody Loves Raymond", "Frasier", "Law & Order"],
-            movies: ["How the Grinch Stole Christmas", "Cast Away", "Mission: Impossible 2", "Gladiator", "What Women Want"]
+            songs: [
+                { label: "Hanging by a Moment", year: 2000, length: "3:36", top: "1 Week" },
+                { label: "Fallin'", year: 2001, length: "3:30", top: "6 Weeks" },
+                { label: "All for You", year: 2001, length: "4:24", top: "7 Weeks" },
+                { label: "Drops of Jupiter", year: 2001, length: "4:20", top: "#5 Peak" },
+                { label: "I'm Real", year: 2001, length: "4:12", top: "5 Weeks" },
+                { label: "Smooth Criminal", year: 2001, length: "3:29", top: "Top 10" },
+                { label: "Bootylicious", year: 2001, length: "3:28", top: "2 Weeks" },
+                { label: "U Remind Me", year: 2001, length: "4:27", top: "4 Weeks" },
+                { label: "Hero", year: 2001, length: "4:19", top: "3 Weeks" },
+                { label: "Lady Marmalade", year: 2001, length: "4:25", top: "5 Weeks" }
+            ],
+            tv: [
+                { label: "Survivor", year: 2000, length: "44m", top: "#1 Reality" },
+                { label: "ER", year: 2000, length: "44m", top: "#1 Drama" },
+                { label: "Friends", year: 2000, length: "22m", top: "#1 Comedy" },
+                { label: "CSI", year: 2000, length: "44m", top: "Top 5" },
+                { label: "Will & Grace", year: 2000, length: "22m", top: "Top 10" },
+                { label: "The West Wing", year: 2000, length: "44m", top: "Critical Hit" },
+                { label: "Monday Night Football", year: 2000, length: "180m", top: "#1 Sports" },
+                { label: "Everybody Loves Raymond", year: 2000, length: "22m", top: "Top 10" },
+                { label: "Frasier", year: 2000, length: "22m", top: "Top 15" },
+                { label: "Law & Order", year: 2000, length: "44m", top: "Top 20" }
+            ],
+            movies: [
+                { label: "How the Grinch Stole Christmas", year: 2000, length: "104m", top: "$345M" },
+                { label: "Cast Away", year: 2000, length: "143m", top: "$429M" },
+                { label: "Mission: Impossible 2", year: 2000, length: "123m", top: "$546M" },
+                { label: "Gladiator", year: 2000, length: "155m", top: "$460M" },
+                { label: "What Women Want", year: 2000, length: "127m", top: "$374M" }
+            ]
         };
     } else if (year >= 1990) {
         return {
-            songs: ["Smooth", "Say My Name", "Maria Maria", "Breathe", "I Knew I Loved You", "Amazed", "Everything You Want", "Bent", "It's Gonna Be Me", "Be With You"],
-            tv: ["Friends", "ER", "Who Wants to Be a Millionaire", "Frasier", "The West Wing", "The Practice", "60 Minutes", "Touched by an Angel", "Law & Order", "Everybody Loves Raymond"],
-            movies: ["Toy Story 2", "The Green Mile", "Stuart Little", "Any Given Sunday", "Magnolia"]
+            songs: [
+                { label: "Smooth", year: 1999, length: "4:54", top: "12 Weeks" },
+                { label: "Say My Name", year: 1999, length: "4:31", top: "3 Weeks" },
+                { label: "Maria Maria", year: 1999, length: "4:22", top: "10 Weeks" },
+                { label: "Breathe", year: 1999, length: "4:10", top: "18 Weeks" },
+                { label: "I Knew I Loved You", year: 1999, length: "4:10", top: "4 Weeks" },
+                { label: "Amazed", year: 1999, length: "4:00", top: "2 Weeks" },
+                { label: "Everything You Want", year: 1999, length: "4:17", top: "1 Week" },
+                { label: "Bent", year: 2000, length: "4:16", top: "1 Week" },
+                { label: "It's Gonna Be Me", year: 2000, length: "3:11", top: "2 Weeks" },
+                { label: "Be With You", year: 2000, length: "3:40", top: "3 Weeks" }
+            ],
+            tv: [
+                { label: "Friends", year: 1999, length: "22m", top: "#1 Comedy" },
+                { label: "ER", year: 1999, length: "44m", top: "#1 Drama" },
+                { label: "Who Wants to Be a Millionaire", year: 1999, length: "60m", top: "#1 Quiz" },
+                { label: "Frasier", year: 1999, length: "22m", top: "Top 10" },
+                { label: "The West Wing", year: 1999, length: "44m", top: "Critical Peak" },
+                { label: "The Practice", year: 1999, length: "44m", top: "Top 10" },
+                { label: "60 Minutes", year: 1999, length: "60m", top: "#1 News" },
+                { label: "Touched by an Angel", year: 1999, length: "44m", top: "Top 10" },
+                { label: "Law & Order", year: 1999, length: "44m", top: "Top 15" },
+                { label: "Everybody Loves Raymond", year: 1999, length: "22m", top: "Top 20" }
+            ],
+            movies: [
+                { label: "Toy Story 2", year: 1999, length: "92m", top: "$497M" },
+                { label: "The Green Mile", year: 1999, length: "189m", top: "$286M" },
+                { label: "Stuart Little", year: 1999, length: "84m", top: "$300M" },
+                { label: "Any Given Sunday", year: 1999, length: "162m", top: "$100M" },
+                { label: "Magnolia", year: 1999, length: "188m", top: "Cult Classic" }
+            ]
         };
     } else {
         return {
-            songs: ["Every Breath You Take", "Billie Jean", "Flashdance... What a Feeling", "Down Under", "Beat It", "Total Eclipse of the Heart", "Maneater", "Baby, Come to Me", "Maniac", "Sweet Dreams (Are Made of This)"],
-            tv: ["60 Minutes", "Dallas", "M*A*S*H", "Magnum, P.I.", "Dynasty", "Three's Company", "Simon & Simon", "Falcon Crest", "The Love Boat", "The A-Team"],
-            movies: ["Return of the Jedi", "Terms of Endearment", "Flashdance", "Trading Places", "WarGames"]
+            songs: [
+                { label: "Every Breath You Take", year: 1983, length: "4:13", top: "8 Weeks" },
+                { label: "Billie Jean", year: 1983, length: "4:54", top: "7 Weeks" },
+                { label: "Flashdance... What a Feeling", year: 1983, length: "3:53", top: "6 Weeks" },
+                { label: "Down Under", year: 1983, length: "3:42", top: "4 Weeks" },
+                { label: "Beat It", year: 1983, length: "4:18", top: "3 Weeks" },
+                { label: "Total Eclipse of the Heart", year: 1983, length: "4:30", top: "4 Weeks" },
+                { label: "Maneater", year: 1983, length: "4:33", top: "4 Weeks" },
+                { label: "Baby, Come to Me", year: 1983, length: "3:30", top: "2 Weeks" },
+                { label: "Maniac", year: 1983, length: "4:04", top: "2 Weeks" },
+                { label: "Sweet Dreams", year: 1983, length: "3:36", top: "1 Week" }
+            ],
+            tv: [
+                { label: "60 Minutes", year: 1983, length: "60m", top: "#1 News" },
+                { label: "Dallas", year: 1983, length: "45m", top: "#1 Soap" },
+                { label: "M*A*S*H", year: 1983, length: "25m", top: "Finale Peak" },
+                { label: "Magnum, P.I.", year: 1983, length: "48m", top: "Top 5" },
+                { label: "Dynasty", year: 1983, length: "45m", top: "Top 10" },
+                { label: "Three's Company", year: 1983, length: "25m", top: "Top 10" },
+                { label: "Simon & Simon", year: 1983, length: "48m", top: "Top 10" },
+                { label: "Falcon Crest", year: 1983, length: "45m", top: "Top 10" },
+                { label: "The Love Boat", year: 1983, length: "45m", top: "Top 15" },
+                { label: "The A-Team", year: 1983, length: "48m", top: "Top 15" }
+            ],
+            movies: [
+                { label: "Return of the Jedi", year: 1983, length: "131m", top: "$475M" },
+                { label: "Terms of Endearment", year: 1983, length: "132m", top: "$108M" },
+                { label: "Flashdance", year: 1983, length: "95m", top: "$201M" },
+                { label: "Trading Places", year: 1983, length: "116m", top: "$90M" },
+                { label: "WarGames", year: 1983, length: "114m", top: "$79M" }
+            ]
         };
+    }
+}
+
+function renderNameMeaning() {
+    const { container, content } = createCollapsibleSection('NAME MEANING');
+    const name = state.user.name || 'Jamie';
+    
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <div class="item-title" style="color: var(--accent-cyan); margin-bottom: 8px;">SHORT VERSION</div>
+        <div class="item-subtitle" style="font-size: 1rem; margin-bottom: 16px;">
+            ${getNameMeaning(name).short}
+        </div>
+        <hr class="divider">
+        <div class="item-title" style="color: var(--accent-cyan); margin-bottom: 8px; margin-top: 16px;">DETAILED ANALYSIS</div>
+        <div class="item-subtitle" style="line-height: 1.5;">
+            ${getNameMeaning(name).long}
+        </div>
+    `;
+    content.appendChild(card);
+    elements.resultsSection.appendChild(container);
+}
+
+function renderNameWorld() {
+    const { container, content } = createCollapsibleSection('NAME WORLD');
+    const name = state.user.name || 'Jamie';
+    const meanings = getNameWorldMeanings(name);
+
+    content.appendChild(createDataList(meanings.map(m => ({
+        label: m.lang,
+        value: m.meaning,
+        subtitle: m.variation
+    }))));
+
+    elements.resultsSection.appendChild(container);
+}
+
+function renderNameJokes() {
+    const { container, content } = createCollapsibleSection('NAME JOKES');
+    const name = state.user.name || 'Jamie';
+    
+    const mainCard = document.createElement('div');
+    mainCard.className = 'card';
+
+    const jokeTypes = ['Joke', 'Pun', 'Knock Knock', 'Dad'];
+    jokeTypes.forEach(type => {
+        const sub = createCollapsibleSubSection(`${type.toUpperCase()}S`, type === 'Joke');
+        const jokes = getNameJokes(name, type);
+        sub.content.innerHTML = jokes.map((j, i) => `
+            <div class="list-item" style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div class="item-num">${(i + 1).toString().padStart(2, '0')}</div>
+                <div class="item-main">
+                    <div class="item-subtitle" style="color: #eee; font-size: 0.85rem;">${j}</div>
+                </div>
+            </div>
+        `).join('');
+        mainCard.appendChild(sub.container);
+    });
+
+    content.appendChild(mainCard);
+    elements.resultsSection.appendChild(container);
+}
+
+// --- Data Generators for Name Features ---
+
+function getNameMeaning(name) {
+    const n = name.toLowerCase();
+    if (n.includes('jamie')) {
+        return {
+            short: "Supplanter, derived from James.",
+            long: "Jamie is a name of Hebrew origin, serving as both a diminutive of James and a standalone name. It means 'supplanter' or 'one who replaces.' Historically, it gained popularity in Scotland and has since become a beloved gender-neutral name worldwide. It conveys a sense of friendliness, versatility, and enduring charm."
+        };
+    }
+    return {
+        short: `The name ${name} is a unique identifier with deep personal resonance.`,
+        long: `The name ${name} carries a vibration of individuality and character. Names are more than just labels; they are the first gift we receive and the legacy we leave behind. Your name reflects a combination of heritage, parental hope, and the unique path you carve through history.`
+    };
+}
+
+function getNameWorldMeanings(name) {
+    const n = name.toLowerCase();
+    if (n.includes('jamie')) {
+        return [
+            { lang: "Hebrew", meaning: "Supplanter", variation: "Ya'aqov" },
+            { lang: "Spanish", meaning: "Supplanter", variation: "Jaime" },
+            { lang: "French", meaning: "I Love", variation: "J'aime" },
+            { lang: "Italian", meaning: "Supplanter", variation: "Giacomo" },
+            { lang: "Scottish", meaning: "Friendly/Fair", variation: "Seumas" }
+        ];
+    }
+    return [
+        { lang: "Global", meaning: "Individual", variation: name },
+        { lang: "Digital", meaning: "User_Sequence", variation: `ID_${name.length}` },
+        { lang: "Historical", meaning: "Witness", variation: "Legacy" },
+        { lang: "Linguistic", meaning: "Nominal", variation: "Identifier" }
+    ];
+}
+
+function getNameJokes(name, type) {
+    if (type === 'Joke') {
+        return [
+            `Why did ${name} cross the road? To get to the other side of the name tag!`,
+            `${name} walked into a bar... and the bartender said, "Hey, I've been waiting for a legend!"`,
+            `What's ${name}'s favorite exercise? Running through everyone's mind!`,
+            `How do you know ${name} is in the room? Don't worry, the vibe will tell you.`,
+            `Why is ${name} like a rare diamond? Hard to find and impossible to forget.`
+        ];
+    } else if (type === 'Pun') {
+        return [
+            `I'm ${name}-ing to meet you!`,
+            `That's just the ${name} of the game.`,
+            `Don't ${name} me, I'm just the messenger.`,
+            `It's a ${name} shame we didn't meet sooner.`,
+            `Keep calm and ${name} on.`
+        ];
+    } else if (type === 'Knock Knock') {
+        return [
+            `Knock, knock. Who's there? ${name}. ${name} who? ${name} you glad I'm here?`,
+            `Knock, knock. Who's there? Justin. Justin who? Justin time for ${name}!`,
+            `Knock, knock. Who's there? Lettuce. Lettuce who? Lettuce in, it's ${name}!`,
+            `Knock, knock. Who's there? Honey bee. Honey bee who? Honey bee a dear and say hi to ${name}!`,
+            `Knock, knock. Who's there? Tank. Tank who? Tank you for being ${name}!`
+        ];
+    } else {
+        return [
+            `What do you call a funny ${name}? A LOL-ie!`,
+            `Why did ${name} bring a ladder to the bar? Because they heard the drinks were on the house!`,
+            `Did you hear about ${name} joining the space program? They wanted to see if the moon was made of cheese.`,
+            `How does ${name} keep their breath fresh? With ${name}-mints!`,
+            `What did the ocean say to ${name}? Nothing, it just waved!`
+        ];
     }
 }
 
