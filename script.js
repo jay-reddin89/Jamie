@@ -196,7 +196,7 @@ function renderResults() {
             <div class="sub-label">User</div>
             <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>
             <div class="location-label">📍 ${state.user.country || 'UNKNOWN LOCALE'} ${state.user.gender ? `// ${state.user.gender}` : ''}</div>
-            <div class="item-subtitle" style="margin-top: 4px; font-size: 0.7rem; color: var(--accent-cyan);">📅 BORN: ${new Date(state.user.dob).toLocaleDateString('en-GB', { day: '2-digit', month: 'LONG', year: 'numeric' }).toUpperCase()}</div>
+            <div class="item-subtitle" style="margin-top: 4px; font-size: 0.7rem; color: var(--accent-cyan);">📅 BORN: ${new Date(state.user.dob).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}</div>
         </div>
         <div class="badge-active">ACTIVE</div>
     `;
