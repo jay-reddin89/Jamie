@@ -63,6 +63,11 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+*:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
 body {
     background-color: var(--md-sys-color-background);
     color: var(--md-sys-color-on-background);
@@ -426,6 +431,15 @@ header {
 .align-center { align-items: center; }
 .justify-between { justify-content: space-between; }
 .pointer { cursor: pointer; }
+.btn-reset {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: inherit;
+    font: inherit;
+    color: inherit;
+    padding: 0;
+}
 .relative { position: relative; }
 .display-block { display: block; }
 .flex-1 { flex: 1; }
