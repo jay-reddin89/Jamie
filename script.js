@@ -595,15 +595,14 @@ function startLiveUpdates() {
         if (!state.user.dob) return;
         const diff = new Date() - new Date(state.user.dob);
         const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+        update('val-seconds', numberFormatter.format(Math.floor(diff / 1000)));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
+        update('val-months', numberFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numberFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', numberFormatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', numberFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numberFormatter.format(age.minutes));
         update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
 
         const mins = diff / 60000, days = diff / 86400000;
@@ -616,11 +615,30 @@ function startLiveUpdates() {
     }, 1000);
 }
 
+// Caches for performance optimization
+const liveCounterElements = {};
+const lastCounterValues = {};
+const numberFormatter = new Intl.NumberFormat('en-US');
+
+/**
+ * Optimized DOM update helper with caching and dirty checking
+ */
+function update(id, val) {
+    if (!liveCounterElements[id]) {
+        liveCounterElements[id] = document.getElementById(id);
+    }
+    const el = liveCounterElements[id];
+    if (el && lastCounterValues[id] !== val) {
+        el.textContent = val;
+        lastCounterValues[id] = val;
+    }
+}
+
 function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return numberFormatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
