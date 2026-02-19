@@ -15,6 +15,11 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// Optimization Cache
+const numberFormatter = new Intl.NumberFormat('en-US');
+const counterElements = {};
+const lastCounterValues = {};
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -133,6 +138,9 @@ function handleReset() {
         clearUserData();
         userData = { name: '', dob: null, gender: '', country: '', photoUrl: null };
         if (updateInterval) clearInterval(updateInterval);
+        // Clear caches
+        for (const key in lastCounterValues) delete lastCounterValues[key];
+        for (const key in counterElements) delete counterElements[key];
         showOnboarding();
     }
 }
@@ -202,6 +210,8 @@ function populateDashboard() {
 // LIVE COUNTERS
 // ==========================================
 function startLiveCounters() {
+    // Clear dirty checking cache to force immediate update
+    for (const key in lastCounterValues) delete lastCounterValues[key];
     updateLiveCounters();
     if (updateInterval) clearInterval(updateInterval);
     updateInterval = setInterval(updateLiveCounters, 1000);
@@ -210,14 +220,21 @@ function startLiveCounters() {
 function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
+    const units = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'];
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    // Performance Optimization: Cache DOM lookups and use dirty checking to minimize DOM writes
+    units.forEach(unit => {
+        const value = age[unit];
+        if (lastCounterValues[unit] !== value) {
+            if (!counterElements[unit]) {
+                counterElements[unit] = document.getElementById(`counter-${unit}`);
+            }
+            if (counterElements[unit]) {
+                counterElements[unit].textContent = formatNumber(value);
+                lastCounterValues[unit] = value;
+            }
+        }
+    });
 }
 
 function calculateAge(birthDate) {
@@ -445,14 +462,15 @@ function clearUserData() {
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    // Optimization: Use pre-instantiated Intl.NumberFormat for better performance
+    return numberFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 // ==========================================
