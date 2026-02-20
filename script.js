@@ -32,6 +32,12 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.settingsModal.classList.contains('hidden')) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
 }
 
 function loadUserData() {
@@ -139,10 +145,12 @@ function createCollapsibleSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.className = 'collapsible-section';
 
-    const header = document.createElement('div');
-    header.className = 'section-label flex-row align-center pointer justify-between';
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'section-label flex-row align-center justify-between btn-reset';
+    header.setAttribute('aria-expanded', !isCollapsed);
     header.style.margin = '24px 16px 8px'; // Keeping some margins that were original
-    header.innerHTML = `<span>${label}</span> <span class="toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
+    header.innerHTML = `<span>${label}</span> <span class="toggle-arrow" aria-hidden="true">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
     content.className = 'section-content' + (isCollapsed ? ' hidden' : '');
@@ -150,6 +158,7 @@ function createCollapsibleSection(label, isCollapsed = true) {
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
         header.querySelector('.toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        header.setAttribute('aria-expanded', !hidden);
     });
 
     container.appendChild(header);
@@ -161,10 +170,12 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.className = 'form-field-wrapper';
 
-    const header = document.createElement('div');
-    header.className = 'sub-label pointer flex-row justify-between';
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'sub-label flex-row justify-between btn-reset';
+    header.setAttribute('aria-expanded', !isCollapsed);
     header.style.color = 'var(--accent-amber)';
-    header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
+    header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow" aria-hidden="true">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
     content.className = isCollapsed ? 'hidden' : '';
@@ -172,6 +183,7 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
         header.querySelector('.sub-toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        header.setAttribute('aria-expanded', !hidden);
     });
 
     container.appendChild(header);
