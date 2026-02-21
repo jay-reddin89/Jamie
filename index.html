@@ -31,15 +31,15 @@
                 <div class="card">
                     <h3 class="auth-header"></h3>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Persons Name</label>
+                        <label for="user-name" class="item-subtitle">Persons Name</label>
                         <input type="text" id="user-name" class="input-field" placeholder="Name">
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Date Of Birth</label>
+                        <label for="user-dob" class="item-subtitle">Date Of Birth</label>
                         <input type="date" id="user-dob" class="input-field">
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Gender  (OPTIONAL)</label>
+                        <label for="user-gender" class="item-subtitle">Gender  (OPTIONAL)</label>
                         <select id="user-gender" class="input-field">
                             <option value="">SELECT...</option>
                             <option value="MALE">MALE</option>
@@ -48,11 +48,11 @@
                         </select>
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Country (OPTIONAL)</label>
+                        <label for="user-country" class="item-subtitle">Country (OPTIONAL)</label>
                         <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Selfie Pic</label>
+                        <label for="user-pic" class="item-subtitle">Selfie Pic</label>
                         <input type="file" id="user-pic" class="input-field" accept="image/*">
                     </div>
                     <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
@@ -111,6 +111,6 @@
 
         <div id="notification" class="hidden notification-toast"></div>
     </div>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

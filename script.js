@@ -32,6 +32,12 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.settingsModal.classList.contains('hidden')) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
 }
 
 function loadUserData() {
@@ -139,17 +145,23 @@ function createCollapsibleSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.className = 'collapsible-section';
 
-    const header = document.createElement('div');
-    header.className = 'section-label flex-row align-center pointer justify-between';
+    const header = document.createElement('button');
+    header.className = 'btn-reset section-label flex-row align-center pointer justify-between';
     header.style.margin = '24px 16px 8px'; // Keeping some margins that were original
     header.innerHTML = `<span>${label}</span> <span class="toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    const contentId = `content-${label.toLowerCase().replace(/\s+/g, '-')}`;
+    content.id = contentId;
     content.className = 'section-content' + (isCollapsed ? ' hidden' : '');
+
+    header.setAttribute('aria-controls', contentId);
+    header.setAttribute('aria-expanded', !isCollapsed);
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
         header.querySelector('.toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        header.setAttribute('aria-expanded', !hidden);
     });
 
     container.appendChild(header);
@@ -161,17 +173,23 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.className = 'form-field-wrapper';
 
-    const header = document.createElement('div');
-    header.className = 'sub-label pointer flex-row justify-between';
+    const header = document.createElement('button');
+    header.className = 'btn-reset sub-label pointer flex-row justify-between';
     header.style.color = 'var(--accent-amber)';
     header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    const contentId = `sub-content-${label.toLowerCase().replace(/\s+/g, '-')}`;
+    content.id = contentId;
     content.className = isCollapsed ? 'hidden' : '';
+
+    header.setAttribute('aria-controls', contentId);
+    header.setAttribute('aria-expanded', !isCollapsed);
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
         header.querySelector('.sub-toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        header.setAttribute('aria-expanded', !hidden);
     });
 
     container.appendChild(header);
