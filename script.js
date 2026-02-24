@@ -1,3 +1,4 @@
+let sectionCounter = 0;
 const state = {
     user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
     settings: {
@@ -32,6 +33,10 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') toggleModal(elements.settingsModal, false);
+    });
 }
 
 function loadUserData() {
@@ -136,19 +141,23 @@ function createDataList(items) {
 }
 
 function createCollapsibleSection(label, isCollapsed = true) {
+    const sectionId = `section-${sectionCounter++}`;
     const container = document.createElement('div');
     container.className = 'collapsible-section';
 
-    const header = document.createElement('div');
-    header.className = 'section-label flex-row align-center pointer justify-between';
-    header.style.margin = '24px 16px 8px'; // Keeping some margins that were original
-    header.innerHTML = `<span>${label}</span> <span class="toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
+    const header = document.createElement('button');
+    header.className = 'section-label btn-reset flex-row align-center pointer justify-between';
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', sectionId);
+    header.innerHTML = `<span>${label}</span> <span class="toggle-arrow" aria-hidden="true">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = sectionId;
     content.className = 'section-content' + (isCollapsed ? ' hidden' : '');
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
+        header.setAttribute('aria-expanded', !hidden);
         header.querySelector('.toggle-arrow').textContent = hidden ? '[+]' : '[-]';
     });
 
@@ -158,19 +167,24 @@ function createCollapsibleSection(label, isCollapsed = true) {
 }
 
 function createCollapsibleSubSection(label, isCollapsed = true) {
+    const sectionId = `section-${sectionCounter++}`;
     const container = document.createElement('div');
     container.className = 'form-field-wrapper';
 
-    const header = document.createElement('div');
-    header.className = 'sub-label pointer flex-row justify-between';
+    const header = document.createElement('button');
+    header.className = 'sub-label btn-reset pointer flex-row justify-between';
     header.style.color = 'var(--accent-amber)';
-    header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', sectionId);
+    header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow" aria-hidden="true">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = sectionId;
     content.className = isCollapsed ? 'hidden' : '';
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
+        header.setAttribute('aria-expanded', !hidden);
         header.querySelector('.sub-toggle-arrow').textContent = hidden ? '[+]' : '[-]';
     });
 
