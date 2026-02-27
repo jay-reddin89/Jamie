@@ -15,6 +15,13 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// Optimization Cache
+const domCache = {
+    counters: {}
+};
+const lastValues = {};
+const numberFormatter = new Intl.NumberFormat('en-US');
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -57,6 +64,12 @@ async function initializeApp() {
     }
 
     isInitialized = true;
+
+    // Cache performance-critical DOM elements
+    ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'].forEach(id => {
+        domCache.counters[id] = document.getElementById(`counter-${id}`);
+    });
+
     document.body.classList.add('app-ready');
     console.log("APP READY");
 }
@@ -110,6 +123,12 @@ function handleFormSubmit(e) {
     }
 
     isInitialized = true; // Mark as initialized to prevent initializeApp from overwriting
+
+    // Cache performance-critical DOM elements
+    ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'].forEach(id => {
+        domCache.counters[id] = document.getElementById(`counter-${id}`);
+    });
+
     saveUserData(userData);
     showDashboard();
     startLiveCounters();
@@ -211,13 +230,15 @@ function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    // Optimized: Only update DOM if values have actually changed (dirty checking)
+    // This significantly reduces DOM thrashing for slow-changing counters like years/months
+    ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'].forEach(key => {
+        if (lastValues[key] !== age[key]) {
+            lastValues[key] = age[key];
+            const el = domCache.counters[key];
+            if (el) el.textContent = formatNumber(age[key]);
+        }
+    });
 }
 
 function calculateAge(birthDate) {
@@ -445,7 +466,8 @@ function clearUserData() {
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    // Optimized: Use a pre-instantiated Intl.NumberFormat for better performance in loops
+    return numberFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
