@@ -63,6 +63,11 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+*:focus-visible {
+    outline: 2px solid var(--accent-cyan) !important;
+    outline-offset: 2px;
+}
+
 body {
     background-color: var(--md-sys-color-background);
     color: var(--md-sys-color-on-background);
@@ -370,6 +375,16 @@ header {
 .btn-primary:hover {
     background-color: #0a3a87;
     box-shadow: var(--md-elevation-2);
+}
+
+.btn-reset {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
 }
 
 .hidden { display: none !important; }
