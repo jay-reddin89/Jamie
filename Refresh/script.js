@@ -15,6 +15,11 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// Performance Caches
+const domCache = {};
+const lastValues = {};
+const numberFormatter = new Intl.NumberFormat('en-US');
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -207,21 +212,38 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
-function updateLiveCounters() {
-    if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
-
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+/**
+ * Optimized DOM update with dirty checking.
+ */
+function updateDOM(id, value) {
+    if (!domCache[id]) domCache[id] = document.getElementById(id);
+    const el = domCache[id];
+    if (el && lastValues[id] !== value) {
+        el.textContent = value;
+        lastValues[id] = value;
+    }
 }
 
-function calculateAge(birthDate) {
+function updateLiveCounters() {
+    if (!userData.dob) return;
     const now = new Date();
+    const age = calculateAge(userData.dob, now);
+
+    updateDOM('counter-years', numberFormatter.format(age.years));
+    updateDOM('counter-months', numberFormatter.format(age.months));
+    updateDOM('counter-weeks', numberFormatter.format(age.weeks));
+    updateDOM('counter-days', numberFormatter.format(age.days));
+    updateDOM('counter-hours', numberFormatter.format(age.hours));
+    updateDOM('counter-minutes', numberFormatter.format(age.minutes));
+    updateDOM('counter-seconds', numberFormatter.format(age.seconds));
+
+    // Also update lifetime stats in the same cycle for better sync
+    updateLifetimeStats(now);
+}
+
+function calculateAge(birthDate, now = new Date()) {
+    // Safety coercion for birthDate
+    birthDate = birthDate instanceof Date ? birthDate : new Date(birthDate);
     const diff = now - birthDate;
 
     const seconds = Math.floor(diff / 1000);
@@ -238,17 +260,17 @@ function calculateAge(birthDate) {
 // ==========================================
 // LIFETIME STATISTICS
 // ==========================================
-function updateLifetimeStats() {
+function updateLifetimeStats(now = new Date()) {
     if (!userData.dob) return;
-    const diff = new Date() - userData.dob;
+    const diff = now - userData.dob;
     const mins = diff / 60000;
     const days = diff / 86400000;
 
-    document.getElementById('stat-heartbeats').textContent = formatLargeNumber(Math.floor(mins * 72));
-    document.getElementById('stat-breaths').textContent = formatLargeNumber(Math.floor(mins * 14));
-    document.getElementById('stat-sleep').textContent = formatLargeNumber(Math.floor(days * 8));
-    document.getElementById('stat-meals').textContent = formatLargeNumber(Math.floor(days * 1.5));
-    document.getElementById('stat-blinks').textContent = formatLargeNumber(Math.floor(days * 15 * 60 * 16));
+    updateDOM('stat-heartbeats', formatLargeNumber(Math.floor(mins * 72)));
+    updateDOM('stat-breaths', formatLargeNumber(Math.floor(mins * 14)));
+    updateDOM('stat-sleep', formatLargeNumber(Math.floor(days * 8)));
+    updateDOM('stat-meals', formatLargeNumber(Math.floor(days * 1.5)));
+    updateDOM('stat-blinks', formatLargeNumber(Math.floor(days * 15 * 60 * 16)));
 }
 
 // ==========================================
@@ -445,14 +467,14 @@ function clearUserData() {
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 // ==========================================

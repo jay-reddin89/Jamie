@@ -581,8 +581,14 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Optimized age calculation.
+ * @param {Date} dob - Pre-parsed DOB date object.
+ * @param {Date} now - Current date object to minimize instantiation.
+ */
+function calculateAge(dob, now = new Date()) {
+    dob = dob instanceof Date ? dob : new Date(dob);
+    const diff = now - dob;
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -590,37 +596,76 @@ function calculateAge(dobStr) {
     };
 }
 
+/**
+ * Performance-optimized high-frequency update loop (1s interval).
+ * Implements DOM caching, dirty checking, and efficient formatting.
+ */
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (!state.user.dob) return;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+    // 1. Pre-calculate invariant state
+    const dobDate = new Date(state.user.dob);
+    const formatter = new Intl.NumberFormat('en-US');
+
+    // 2. Cache DOM elements and last rendered values
+    const domCache = {};
+    const lastValues = {};
+    const ids = [
+        'val-seconds', 'val-years', 'val-months', 'val-weeks', 'val-days',
+        'val-hours', 'val-minutes', 'val-born-day', 'est-heart', 'est-breaths',
+        'est-sleep', 'est-eat', 'est-blinks'
+    ];
+    ids.forEach(id => domCache[id] = document.getElementById(id));
+
+    // 3. Dirty checking update helper
+    const update = (id, val) => {
+        const el = domCache[id];
+        if (el && lastValues[id] !== val) {
+            el.textContent = val;
+            lastValues[id] = val;
+        }
+    };
+
+    // Pre-calculate born day (constant)
+    const bornDay = dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+
+    // Clear any existing interval to prevent leaks
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
+
+    const updateLoop = () => {
+        const now = new Date();
+        const diff = now - dobDate;
+        const age = calculateAge(dobDate, now);
+
+        update('val-seconds', formatter.format(Math.floor(diff / 1000)));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', formatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', formatter.format(Math.floor(diff / 604800000)));
+        update('val-days', formatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', formatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', formatter.format(age.minutes));
+        update('val-born-day', bornDay);
 
         const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
+        update('est-heart', formatLarge(mins * 72, formatter));
+        update('est-breaths', formatLarge(mins * 14, formatter));
+        update('est-sleep', formatLarge(days * 8, formatter));
+        update('est-eat', formatLarge(days * 1.5, formatter));
+        update('est-blinks', formatLarge(days * 15 * 60 * 16, formatter));
+    };
 
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
-    }, 1000);
+    updateLoop(); // Initial call
+    state.liveUpdateInterval = setInterval(updateLoop, 1000);
 }
 
-function formatLarge(num) {
+/**
+ * Optimized large number formatter using pre-instantiated Intl.NumberFormat.
+ */
+function formatLarge(num, formatter = new Intl.NumberFormat('en-US')) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return formatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
