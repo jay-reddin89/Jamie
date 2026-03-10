@@ -1,0 +1,3 @@
+## 2025-05-15 - Improving Form Accessibility and Keyboard Navigation
+**Learning:** Explicitly associating `<label>` elements with their respective `<input>` and `<select>` fields using the `for` attribute significantly improves accessibility and usability. It provides clear context for screen readers and increases the hit area for all users. Additionally, implementing `:focus-visible` styles ensures a clear visual indicator for keyboard navigation, which is a critical yet often overlooked aspect of user experience.
+**Action:** Always ensure that every form input has a properly associated label and that interactive elements have distinct, high-contrast focus indicators for keyboard users.

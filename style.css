@@ -588,6 +588,15 @@ header {
     transform: rotate(30deg);
 }
 
+.settings-icon:focus-visible,
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible,
+.input-field:focus-visible,
+.section-toggle:focus-visible {
+    outline: 2px solid var(--accent-cyan) !important;
+    outline-offset: 2px;
+}
+
 .settings-icon svg {
     width: 22px;
     height: 22px;
