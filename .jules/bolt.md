@@ -1,0 +1,3 @@
+## 2025-05-14 - [High-Frequency Loop Optimization & PR Hygiene]
+**Learning:** In applications with 1-second interval live updates, standard DOM writes and `toLocaleString()` calls accumulate significant overhead. Implementing a `domCache` and dirty-checking via `lastValues` prevents unnecessary reflows. Pre-instantiating `Intl.NumberFormat` is significantly more efficient than per-call formatting. Additionally, development artifacts (logs, `dist/`, auto-generated lockfiles) must be manually cleared before submission to maintain repository hygiene.
+**Action:** Always implement a `updateStat`-style helper for high-frequency UI updates. Cache parsed Date objects to avoid redundant string parsing in loops. Strictly verify staged files to exclude non-source artifacts.
