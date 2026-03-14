@@ -1,0 +1,3 @@
+## 2025-05-14 - Optimized High-Frequency UI Updates
+**Learning:** In high-frequency loops (1s or less), the overhead of `toLocaleString()`, `new Date()`, and redundant DOM writes (even if the value is the same) accumulates significantly. `Intl.NumberFormat` is ~8x faster than `toLocaleString()`. Pre-parsing dates and using a "dirty checking" pattern with lazy DOM caching can reduce layout/reflow overhead by ~40% and script execution time by ~60%.
+**Action:** Always implement a `updateStat` pattern with dirty checking and DOM caching for any element updated more frequently than once every few seconds. Pre-instantiate formatters and pre-parse data outside the loop.

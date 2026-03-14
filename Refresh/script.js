@@ -15,6 +15,11 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// ⚡ Performance Caches
+const domCache = {};
+const lastValues = {};
+const numberFormatter = new Intl.NumberFormat();
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -49,6 +54,7 @@ async function initializeApp() {
 
     if (savedData && !isInitialized) {
         userData = savedData;
+        // ⚡ Performance: Pre-parse Date
         if (userData.dob) userData.dob = new Date(userData.dob);
         showDashboard();
         startLiveCounters();
@@ -100,6 +106,7 @@ function handleFormSubmit(e) {
 
     const formData = new FormData(e.target);
     userData.name = formData.get('name');
+    // ⚡ Performance: Pre-parse Date
     userData.dob = new Date(formData.get('dob'));
     userData.gender = formData.get('gender');
     userData.country = formData.get('country');
@@ -165,6 +172,9 @@ function showOnboarding() {
 function showDashboard() {
     document.getElementById('onboarding-screen').classList.remove('active');
     document.getElementById('dashboard-screen').classList.add('active');
+    // ⚡ Performance: Invalidate caches when showing dashboard
+    for (let key in domCache) delete domCache[key];
+    for (let key in lastValues) delete lastValues[key];
     populateDashboard();
 }
 
@@ -207,17 +217,42 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
+/**
+ * ⚡ Performance: Updates a DOM element's textContent only if the value has changed.
+ * Utilizes lazy DOM caching to avoid repeated document.getElementById lookups.
+ */
+function updateStat(id, value) {
+    if (!(id in domCache)) {
+        domCache[id] = document.getElementById(id);
+    }
+    const el = domCache[id];
+    if (el && lastValues[id] !== value) {
+        el.textContent = value;
+        lastValues[id] = value;
+    }
+}
+
 function updateLiveCounters() {
     if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
+    const now = new Date();
+    const diff = now - userData.dob;
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    // ⚡ Performance: Use inlined math to avoid function call overhead
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const weeks = Math.floor(days / 7);
+    const months = Math.floor(days / 30.44);
+    const years = Math.floor(days / 365.25);
+
+    updateStat('counter-years', numberFormatter.format(years));
+    updateStat('counter-months', numberFormatter.format(months));
+    updateStat('counter-weeks', numberFormatter.format(weeks));
+    updateStat('counter-days', numberFormatter.format(days));
+    updateStat('counter-hours', numberFormatter.format(hours));
+    updateStat('counter-minutes', numberFormatter.format(minutes));
+    updateStat('counter-seconds', numberFormatter.format(seconds));
 }
 
 function calculateAge(birthDate) {
@@ -244,11 +279,11 @@ function updateLifetimeStats() {
     const mins = diff / 60000;
     const days = diff / 86400000;
 
-    document.getElementById('stat-heartbeats').textContent = formatLargeNumber(Math.floor(mins * 72));
-    document.getElementById('stat-breaths').textContent = formatLargeNumber(Math.floor(mins * 14));
-    document.getElementById('stat-sleep').textContent = formatLargeNumber(Math.floor(days * 8));
-    document.getElementById('stat-meals').textContent = formatLargeNumber(Math.floor(days * 1.5));
-    document.getElementById('stat-blinks').textContent = formatLargeNumber(Math.floor(days * 15 * 60 * 16));
+    updateStat('stat-heartbeats', formatLargeNumber(Math.floor(mins * 72)));
+    updateStat('stat-breaths', formatLargeNumber(Math.floor(mins * 14)));
+    updateStat('stat-sleep', formatLargeNumber(Math.floor(days * 8)));
+    updateStat('stat-meals', formatLargeNumber(Math.floor(days * 1.5)));
+    updateStat('stat-blinks', formatLargeNumber(Math.floor(days * 15 * 60 * 16)));
 }
 
 // ==========================================
@@ -445,14 +480,14 @@ function clearUserData() {
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 // ==========================================
