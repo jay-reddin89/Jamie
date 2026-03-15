@@ -1,0 +1,3 @@
+## 2025-03-15 - Improving Onboarding Accessibility
+**Learning:** Explicitly associating `<label>` elements with their respective `<input>` or `<select>` elements using the `for` attribute and corresponding `id`s is critical for screen reader support and significantly improves the hit target size for all users, particularly on touch devices. Additionally, providing clear `:focus-visible` indicators ensures that keyboard users can easily navigate and identify active interactive elements.
+**Action:** Always ensure that every form input has a correctly associated label and that interactive elements have distinct focus-visible states to maintain high accessibility standards.
