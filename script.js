@@ -1,10 +1,14 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    domCache: {},
+    lastValues: {}
 };
+
+const formatter = new Intl.NumberFormat();
 
 const elements = {
     inputSection: document.getElementById('input-section'),
@@ -44,6 +48,7 @@ function loadUserData() {
         if (document.getElementById('user-gender')) {
             document.getElementById('user-gender').value = state.user.gender;
         }
+        if (state.user.dob) state.user.dobDate = new Date(state.user.dob);
         elements.generateBtn.classList.remove('hidden');
     }
 }
@@ -56,6 +61,7 @@ function saveUserData() {
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
 
+    state.user.dobDate = new Date(state.user.dob);
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
     elements.generateBtn.classList.remove('hidden');
@@ -182,6 +188,10 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
 // --- Main Results Renderer ---
 
 function renderResults() {
+    // Reset performance caches for the new render
+    state.domCache = {};
+    state.lastValues = {};
+
     const sections = state.settings.sections;
     elements.resultsSection.innerHTML = '';
 
@@ -592,19 +602,35 @@ function calculateAge(dobStr) {
 
 function startLiveUpdates() {
     setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        if (!state.user.dobDate) return;
+        const diff = new Date() - state.user.dobDate;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+        // Logical age calculation for static milestones
+        const age = {
+            years: Math.floor(diff / 31557600000),
+            minutes: Math.floor(diff / 60000),
+            seconds: Math.floor(diff / 1000)
+        };
+        const update = (id, val) => {
+            if (!(id in state.domCache)) state.domCache[id] = document.getElementById(id);
+            const el = state.domCache[id];
+            if (el && state.lastValues[id] !== val) {
+                el.textContent = val;
+                state.lastValues[id] = val;
+            }
+        };
+
+        update('val-seconds', formatter.format(Math.floor(diff / 1000)));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', formatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', formatter.format(Math.floor(diff / 604800000)));
+        update('val-days', formatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', formatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', formatter.format(age.minutes));
+
+        if (!('val-born-day' in state.lastValues)) {
+            update('val-born-day', state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        }
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
@@ -620,7 +646,7 @@ function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return formatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
