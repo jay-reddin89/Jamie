@@ -377,7 +377,7 @@ function renderStarFacts() {
         <div class="item-subtitle">STONE MEANING: SYMBOL OF ETERNAL LOVE AND INNER STRENGTH.</div>
         <hr class="divider">
         <div class="item-title">Light Travel Distance: <span class="item-val">${age} LY</span></div>
-        <div class="opacity-low font-large-icon absolute-bottom-right">✨</div>
+        <div class="opacity-low font-large-icon absolute-bottom-right" aria-hidden="true">✨</div>
     `;
     content.appendChild(card);
     elements.resultsSection.appendChild(container);

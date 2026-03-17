@@ -604,6 +604,11 @@ header {
     margin-bottom: 12px;
 }
 
+.required-star {
+    color: var(--md-sys-color-error);
+    margin-left: 4px;
+}
+
 .btn-scan {
     background: var(--accent-amber) !important;
     color: #000 !important;

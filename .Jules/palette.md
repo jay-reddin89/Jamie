@@ -1,0 +1,3 @@
+## 2025-05-15 - [Form Accessibility and Semantic UI Enhancements]
+**Learning:** Explicit association between `<label>` and `<input>` using `for`/`id` attributes is critical for screen readers and significantly improves the hit target size for all users, particularly on touch devices. Adding visual indicators (`*`) for required fields along with the `required` attribute provides both visual and programmatic validation, making forms more intuitive. Decorative elements should always be hidden from assistive technologies using `aria-hidden="true"` to reduce noise.
+**Action:** Always ensure every input field has a corresponding label with a `for` attribute and that decorative icons/emojis are marked with `aria-hidden="true"`.
