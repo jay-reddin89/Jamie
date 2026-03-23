@@ -1,9 +1,10 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null, bornDay: '' },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    domCache: {} // Performance: Cache for DOM elements used in high-frequency loops
 };
 
 const elements = {
@@ -38,6 +39,11 @@ function loadUserData() {
     const savedData = localStorage.getItem('jr_life_facts_user');
     if (savedData) {
         state.user = JSON.parse(savedData);
+        // Performance: Pre-calculate Date and string derivations for high-frequency loops
+        if (state.user.dob) {
+            state.user.dobDate = new Date(state.user.dob);
+            state.user.bornDay = state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        }
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
         document.getElementById('user-country').value = state.user.country;
@@ -55,6 +61,10 @@ function saveUserData() {
     state.user.gender = document.getElementById('user-gender').value;
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+
+    // Performance: Pre-calculate Date and string derivations for high-frequency loops
+    state.user.dobDate = new Date(state.user.dob);
+    state.user.bornDay = state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
@@ -590,21 +600,41 @@ function calculateAge(dobStr) {
     };
 }
 
+// Performance: Host formatter outside loop to avoid repeated allocation
+const numberFormatter = new Intl.NumberFormat();
+
 function startLiveUpdates() {
     setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        if (!state.user.dobDate) return;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        // Performance: Use pre-parsed Date object
+        const diff = Date.now() - state.user.dobDate;
+        const ageYears = Math.floor(diff / 31557600000);
+        const ageMinutes = Math.floor(diff / 60000);
+
+        // Performance: Lazy DOM caching and dirty checking to skip redundant DOM updates
+        const update = (id, val) => {
+            let el = state.domCache[id];
+            if (!el) {
+                el = document.getElementById(id);
+                if (el) state.domCache[id] = el;
+            }
+            if (el && el.textContent !== String(val)) {
+                el.textContent = val;
+            }
+        };
+
+        // Performance: Use Intl.NumberFormat which is ~6x faster than toLocaleString()
+        update('val-seconds', numberFormatter.format(Math.floor(diff / 1000)));
+        update('val-years', ageYears);
+        update('val-months', numberFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numberFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', numberFormatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', numberFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numberFormatter.format(ageMinutes));
+
+        // Performance: Use pre-calculated bornDay string
+        update('val-born-day', state.user.bornDay);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
