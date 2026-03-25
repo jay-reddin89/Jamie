@@ -15,6 +15,24 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+const uiCache = {
+    elements: {},
+    values: {}
+};
+
+const liveFormatter = new Intl.NumberFormat('en-US');
+
+const updateLiveCounterElement = (id, val) => {
+    if (uiCache.values[id] === val) return;
+    if (!uiCache.elements[id] || !uiCache.elements[id].isConnected) {
+        uiCache.elements[id] = document.getElementById(id);
+    }
+    if (uiCache.elements[id]) {
+        uiCache.elements[id].textContent = val;
+        uiCache.values[id] = val;
+    }
+};
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -211,18 +229,17 @@ function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    updateLiveCounterElement('counter-years', liveFormatter.format(age.years));
+    updateLiveCounterElement('counter-months', liveFormatter.format(age.months));
+    updateLiveCounterElement('counter-weeks', liveFormatter.format(age.weeks));
+    updateLiveCounterElement('counter-days', liveFormatter.format(age.days));
+    updateLiveCounterElement('counter-hours', liveFormatter.format(age.hours));
+    updateLiveCounterElement('counter-minutes', liveFormatter.format(age.minutes));
+    updateLiveCounterElement('counter-seconds', liveFormatter.format(age.seconds));
 }
 
 function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+    const diff = Date.now() - birthDate.getTime();
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
