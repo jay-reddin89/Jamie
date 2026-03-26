@@ -12,6 +12,7 @@ const elements = {
     resultsSection: document.getElementById('results-section'),
     settingsModal: document.getElementById('settings-modal'),
     saveUserBtn: document.getElementById('save-user-btn'),
+    onboardingForm: document.getElementById('user-onboarding-form'),
     generateBtn: document.getElementById('generate-btn'),
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
+    elements.onboardingForm.addEventListener('submit', saveUserData);
     elements.generateBtn.addEventListener('click', startGeneration);
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
@@ -48,7 +49,8 @@ function loadUserData() {
     }
 }
 
-function saveUserData() {
+function saveUserData(e) {
+    if (e) e.preventDefault();
     state.user.name = document.getElementById('user-name').value;
     state.user.dob = document.getElementById('user-dob').value;
     state.user.country = document.getElementById('user-country').value;
