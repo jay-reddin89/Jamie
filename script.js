@@ -13,6 +13,7 @@ const elements = {
     settingsModal: document.getElementById('settings-modal'),
     saveUserBtn: document.getElementById('save-user-btn'),
     generateBtn: document.getElementById('generate-btn'),
+    onboardingForm: document.getElementById('user-onboarding-form'),
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
     progressBar: document.getElementById('progress-bar'),
@@ -25,8 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    if (elements.onboardingForm) {
+        elements.onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (elements.generateBtn.classList.contains('hidden')) {
+                saveUserData();
+            } else {
+                startGeneration();
+            }
+        });
+    }
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);

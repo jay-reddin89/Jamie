@@ -1,2 +1,7 @@
 node_modules/
 .env
+dist/
+dev_server.log
+server.log
+pnpm-lock.yaml
+/home/jules/verification/
