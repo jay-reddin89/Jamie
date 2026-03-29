@@ -344,7 +344,15 @@ header {
 .input-field:focus {
     outline: none;
     border-color: var(--md-sys-color-primary);
-    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+    box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
+}
+
+.input-field:focus-visible,
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible,
+.settings-icon:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .input-field::placeholder {
