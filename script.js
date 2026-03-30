@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    domCache: {}
 };
 
 const elements = {
@@ -38,6 +39,9 @@ function loadUserData() {
     const savedData = localStorage.getItem('jr_life_facts_user');
     if (savedData) {
         state.user = JSON.parse(savedData);
+        if (state.user.dob) {
+            state.user.bornDay = new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        }
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
         document.getElementById('user-country').value = state.user.country;
@@ -55,6 +59,9 @@ function saveUserData() {
     state.user.gender = document.getElementById('user-gender').value;
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+
+    // Pre-calculate birth day of week to avoid repetitive string derivation in the update loop
+    state.user.bornDay = new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
@@ -581,8 +588,12 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Calculates age components from a date string or pre-calculated timestamp (diff).
+ * Accepts an optional diff parameter to avoid redundant Date parsing in high-frequency loops.
+ */
+function calculateAge(dobStr, precalculatedDiff = null) {
+    const diff = precalculatedDiff !== null ? precalculatedDiff : (new Date() - new Date(dobStr));
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -591,11 +602,31 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
+    // Re-initialize cache to handle potential re-renders where old elements are detached
+    state.domCache = {};
+    const dob = new Date(state.user.dob);
+
     setInterval(() => {
         if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        const diff = new Date() - dob;
+        const age = calculateAge(null, diff);
+
+        /**
+         * Optimized update helper with lazy caching and dirty checking.
+         * Minimizes main thread activity by avoiding redundant DOM updates.
+         */
+        const update = (id, val) => {
+            let el = state.domCache[id];
+            // Verify existence and persistence in the current document tree
+            if (!el || !el.isConnected) {
+                el = document.getElementById(id);
+                if (el) state.domCache[id] = el;
+            }
+            // Dirty checking: only update if the content has actually changed
+            if (el && el.textContent != val) {
+                el.textContent = val;
+            }
+        };
 
         update('val-seconds', Math.floor(diff / 1000).toLocaleString());
         update('val-years', age.years);
@@ -603,16 +634,16 @@ function startLiveUpdates() {
         update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
         update('val-days', Math.floor(diff / 86400000).toLocaleString());
         update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-minutes', Math.floor(diff / 60000).toLocaleString());
+        update('val-born-day', state.user.bornDay);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
+
     }, 1000);
 }
 
