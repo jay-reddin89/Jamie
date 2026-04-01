@@ -323,6 +323,12 @@ header {
     box-shadow: var(--md-elevation-2);
 }
 
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
 /* Form Styles */
 .input-screen {
     padding: 24px 16px;
@@ -370,6 +376,10 @@ header {
 .btn-primary:hover {
     background-color: #0a3a87;
     box-shadow: var(--md-elevation-2);
+}
+
+label.item-subtitle {
+    cursor: pointer;
 }
 
 .hidden { display: none !important; }
@@ -580,7 +590,11 @@ header {
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s, transform 0.2s;
-    outline: none;
+}
+
+.settings-icon:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .settings-icon:hover {
