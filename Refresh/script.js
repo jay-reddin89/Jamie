@@ -15,6 +15,9 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// DOM Cache for high-frequency updates
+const domCache = {};
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -207,22 +210,44 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
-function updateLiveCounters() {
-    if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
-
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+/**
+ * Hoisted helper to update DOM elements with caching and dirty checking.
+ */
+function updateLiveCounterElement(id, value) {
+    if (!(id in domCache)) {
+        domCache[id] = document.getElementById(id);
+    }
+    const el = domCache[id];
+    if (el && el.textContent != value) {
+        el.textContent = value;
+    }
 }
 
-function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+/**
+ * Update live counters with optimizations.
+ * 1. Lazy DOM element caching.
+ * 2. Dirty checking to avoid redundant DOM updates.
+ */
+function updateLiveCounters() {
+    if (!userData.dob) return;
+    const diff = new Date() - userData.dob;
+    const age = calculateAge(null, diff);
+
+    updateLiveCounterElement('counter-years', formatNumber(age.years));
+    updateLiveCounterElement('counter-months', formatNumber(age.months));
+    updateLiveCounterElement('counter-weeks', formatNumber(age.weeks));
+    updateLiveCounterElement('counter-days', formatNumber(age.days));
+    updateLiveCounterElement('counter-hours', formatNumber(age.hours));
+    updateLiveCounterElement('counter-minutes', formatNumber(age.minutes));
+    updateLiveCounterElement('counter-seconds', formatNumber(age.seconds));
+}
+
+/**
+ * Calculate age metrics.
+ * Optimization: Accept pre-calculated diff to avoid redundant Date allocations.
+ */
+function calculateAge(birthDate, precalculatedDiff = null) {
+    const diff = precalculatedDiff !== null ? precalculatedDiff : (new Date() - birthDate);
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -444,8 +469,10 @@ function clearUserData() {
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
+const numberFormatter = new Intl.NumberFormat('en-US');
+
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
