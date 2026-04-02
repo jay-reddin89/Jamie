@@ -11,6 +11,7 @@ const elements = {
     loadingSection: document.getElementById('loading-section'),
     resultsSection: document.getElementById('results-section'),
     settingsModal: document.getElementById('settings-modal'),
+    onboardingForm: document.getElementById('user-onboarding-form'),
     saveUserBtn: document.getElementById('save-user-btn'),
     generateBtn: document.getElementById('generate-btn'),
     settingsBtn: document.getElementById('settings-btn'),
@@ -25,7 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
+    elements.onboardingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (elements.generateBtn.classList.contains('hidden')) {
+            saveUserData();
+        } else {
+            startGeneration();
+        }
+    });
     elements.generateBtn.addEventListener('click', startGeneration);
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
