@@ -254,6 +254,7 @@ header {
     font-size: 0.75rem;
     color: var(--md-sys-color-on-surface-variant);
     margin-top: 4px;
+    cursor: pointer;
 }
 
 .item-val {

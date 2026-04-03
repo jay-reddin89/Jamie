@@ -16,7 +16,8 @@ const elements = {
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
     progressBar: document.getElementById('progress-bar'),
-    notification: document.getElementById('notification')
+    notification: document.getElementById('notification'),
+    onboardingForm: document.getElementById('user-onboarding-form')
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,8 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    if (elements.onboardingForm) {
+        elements.onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (elements.generateBtn.classList.contains('hidden')) {
+                saveUserData();
+            } else {
+                startGeneration();
+            }
+        });
+    }
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
@@ -107,7 +116,12 @@ function startGeneration() {
             clearInterval(interval);
             setTimeout(showResults, 600);
         }
-        elements.progressBar.style.width = `${progress}%`;
+        const roundedProgress = Math.round(progress);
+        elements.progressBar.style.width = `${roundedProgress}%`;
+        const progressBarContainer = elements.progressBar.parentElement;
+        if (progressBarContainer) {
+            progressBarContainer.setAttribute('aria-valuenow', roundedProgress);
+        }
     }, 150);
 }
 
