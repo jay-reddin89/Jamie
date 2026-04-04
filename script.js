@@ -8,6 +8,7 @@ const state = {
 
 const elements = {
     inputSection: document.getElementById('input-section'),
+    onboardingForm: document.getElementById('user-onboarding-form'),
     loadingSection: document.getElementById('loading-section'),
     resultsSection: document.getElementById('results-section'),
     settingsModal: document.getElementById('settings-modal'),
@@ -22,10 +23,24 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     setupEventListeners();
+
+    // Set max date for DOB to today
+    const dobInput = document.getElementById('user-dob');
+    if (dobInput) {
+        dobInput.max = new Date().toISOString().split('T')[0];
+    }
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
+    elements.onboardingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (elements.generateBtn.classList.contains('hidden')) {
+            saveUserData();
+        } else {
+            startGeneration();
+        }
+    });
+    // Remove individual click listener for saveUserBtn as it's now handled by form submit
     elements.generateBtn.addEventListener('click', startGeneration);
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
@@ -108,6 +123,7 @@ function startGeneration() {
             setTimeout(showResults, 600);
         }
         elements.progressBar.style.width = `${progress}%`;
+        elements.progressBar.setAttribute('aria-valuenow', Math.floor(progress));
     }, 150);
 }
 
