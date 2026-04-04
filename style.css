@@ -372,6 +372,14 @@ header {
     box-shadow: var(--md-elevation-2);
 }
 
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible,
+.settings-icon:focus-visible,
+.input-field:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
 .hidden { display: none !important; }
 
 .stellar-card {
