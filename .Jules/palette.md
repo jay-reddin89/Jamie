@@ -1,0 +1,3 @@
+## 2025-05-15 - [Form Accessibility and Semantics]
+**Learning:** Wrapping an onboarding sequence in a semantic `<form>` element provides a major UX win by enabling native "Enter to submit" behavior. Combining this with proper `<label for="...">` associations and `required`/`aria-required` attributes significantly improves accessibility and keyboard navigation predictability in SPAs.
+**Action:** Always prioritize semantic HTML structures for user inputs and ensure ARIA roles (like `role="progressbar"`) and live regions (`aria-live="polite"`) are used to communicate dynamic state changes to screen reader users.
