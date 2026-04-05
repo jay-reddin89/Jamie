@@ -13,6 +13,7 @@ const elements = {
     settingsModal: document.getElementById('settings-modal'),
     saveUserBtn: document.getElementById('save-user-btn'),
     generateBtn: document.getElementById('generate-btn'),
+    onboardingForm: document.getElementById('user-onboarding-form'),
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
     progressBar: document.getElementById('progress-bar'),
@@ -25,8 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    elements.onboardingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (elements.generateBtn.classList.contains('hidden')) {
+            saveUserData();
+        } else {
+            startGeneration();
+        }
+    });
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
@@ -108,6 +115,10 @@ function startGeneration() {
             setTimeout(showResults, 600);
         }
         elements.progressBar.style.width = `${progress}%`;
+        const container = elements.progressBar.parentElement;
+        if (container) {
+            container.setAttribute('aria-valuenow', Math.round(progress));
+        }
     }, 150);
 }
 
@@ -189,7 +200,7 @@ function renderResults() {
     const profile = document.createElement('div');
     profile.className = 'card profile-card';
     profile.innerHTML = `
-        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img">` : '🧬'}</div>
+        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img" alt="User profile picture">` : '🧬'}</div>
         <div class="profile-details">
             <div class="sub-label">SUBJECT</div>
             <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>
