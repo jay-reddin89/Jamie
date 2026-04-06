@@ -13,6 +13,7 @@ const elements = {
     settingsModal: document.getElementById('settings-modal'),
     saveUserBtn: document.getElementById('save-user-btn'),
     generateBtn: document.getElementById('generate-btn'),
+    onboardingForm: document.getElementById('user-onboarding-form'),
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
     progressBar: document.getElementById('progress-bar'),
@@ -20,13 +21,21 @@ const elements = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('user-dob').setAttribute('max', today);
     loadUserData();
     setupEventListeners();
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    elements.onboardingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (elements.generateBtn.classList.contains('hidden')) {
+            saveUserData();
+        } else {
+            startGeneration();
+        }
+    });
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
@@ -108,6 +117,7 @@ function startGeneration() {
             setTimeout(showResults, 600);
         }
         elements.progressBar.style.width = `${progress}%`;
+        elements.progressBar.setAttribute('aria-valuenow', Math.round(progress));
     }, 150);
 }
 
