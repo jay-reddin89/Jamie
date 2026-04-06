@@ -1,0 +1,3 @@
+## 2026-04-06 - Optimization of High-Frequency Live Updates
+**Learning:** Pre-calculating session-level constants (e.g., user birth date objects and localized day-of-week strings) and hoisting DOM caches and formatters (e.g., `Intl.NumberFormat`) significantly reduces CPU overhead in 1s intervals. Implementing dirty checking with strict inequality and explicit string casting ensures robust DOM synchronization with minimal main-thread activity.
+**Action:** Lift static derivations and heavy object allocations out of high-frequency intervals into their parent initialization scope. Use centralized helpers for cached DOM updates.

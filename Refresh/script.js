@@ -201,6 +201,22 @@ function populateDashboard() {
 // ==========================================
 // LIVE COUNTERS
 // ==========================================
+/**
+ * Hoisted cache and update helper for high-frequency live counters.
+ * Reduces main-thread activity by implementing dirty checking and DOM caching.
+ */
+const liveElementCache = {};
+const updateLiveCounterElement = (id, value) => {
+    if (!liveElementCache[id]) {
+        liveElementCache[id] = document.getElementById(id);
+    }
+    const el = liveElementCache[id];
+    const stringValue = String(value);
+    if (el && el.textContent !== stringValue) {
+        el.textContent = stringValue;
+    }
+};
+
 function startLiveCounters() {
     updateLiveCounters();
     if (updateInterval) clearInterval(updateInterval);
@@ -209,20 +225,26 @@ function startLiveCounters() {
 
 function updateLiveCounters() {
     if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    const diff = new Date() - userData.dob;
+    const age = calculateAge(userData.dob, diff);
+
+    updateLiveCounterElement('counter-years', formatNumber(age.years));
+    updateLiveCounterElement('counter-months', formatNumber(age.months));
+    updateLiveCounterElement('counter-weeks', formatNumber(age.weeks));
+    updateLiveCounterElement('counter-days', formatNumber(age.days));
+    updateLiveCounterElement('counter-hours', formatNumber(age.hours));
+    updateLiveCounterElement('counter-minutes', formatNumber(age.minutes));
+    updateLiveCounterElement('counter-seconds', formatNumber(age.seconds));
 }
 
-function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+/**
+ * Calculates time units elapsed from a birth date.
+ * @param {Date} birthDate - The user's birth date object.
+ * @param {number} [precalculatedDiff] - Optional pre-calculated difference in milliseconds.
+ */
+function calculateAge(birthDate, precalculatedDiff) {
+    const diff = precalculatedDiff !== undefined ? precalculatedDiff : (new Date() - birthDate);
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
