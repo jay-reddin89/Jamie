@@ -256,6 +256,11 @@ header {
     margin-top: 4px;
 }
 
+label.item-subtitle {
+    display: block;
+    cursor: pointer;
+}
+
 .item-val {
     color: var(--md-sys-color-secondary);
     font-weight: var(--md-font-weight-semibold);
