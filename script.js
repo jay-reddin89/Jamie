@@ -22,11 +22,24 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     setupEventListeners();
+    const dobInput = document.getElementById('user-dob');
+    if (dobInput) {
+        dobInput.max = new Date().toISOString().split('T')[0];
+    }
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    const onboardingForm = document.getElementById('user-onboarding-form');
+    if (onboardingForm) {
+        onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (elements.generateBtn.classList.contains('hidden')) {
+                saveUserData();
+            } else {
+                startGeneration();
+            }
+        });
+    }
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
@@ -108,6 +121,10 @@ function startGeneration() {
             setTimeout(showResults, 600);
         }
         elements.progressBar.style.width = `${progress}%`;
+        const progressBarContainer = elements.progressBar.parentElement;
+        if (progressBarContainer) {
+            progressBarContainer.setAttribute('aria-valuenow', Math.round(progress));
+        }
     }, 150);
 }
 
