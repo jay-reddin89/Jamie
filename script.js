@@ -1,10 +1,16 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null, bornDay: '' },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
     isPuterSignedIn: false
 };
+
+/** Global interval reference to prevent multiple concurrent loops */
+let liveUpdateInterval = null;
+
+/** Hoist Intl.NumberFormat for high-frequency biometric formatting */
+const liveStatsFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 
 const elements = {
     inputSection: document.getElementById('input-section'),
@@ -44,6 +50,13 @@ function loadUserData() {
         if (document.getElementById('user-gender')) {
             document.getElementById('user-gender').value = state.user.gender;
         }
+
+        // Pre-calculate expensive date derivations outside of high-frequency loops
+        if (state.user.dob) {
+            state.user.dobDate = new Date(state.user.dob);
+            state.user.bornDay = state.user.dobDate.toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase();
+        }
+
         elements.generateBtn.classList.remove('hidden');
     }
 }
@@ -55,6 +68,10 @@ function saveUserData() {
     state.user.gender = document.getElementById('user-gender').value;
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+
+    // Pre-calculate expensive date derivations outside of high-frequency loops
+    state.user.dobDate = new Date(state.user.dob);
+    state.user.bornDay = state.user.dobDate.toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase();
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
@@ -581,8 +598,13 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Calculate age metrics from DOB.
+ * @param {string|Date} dobStr - Birth date
+ * @param {number} [precalculatedDiff] - Optional pre-calculated difference in ms
+ */
+function calculateAge(dobStr, precalculatedDiff) {
+    const diff = precalculatedDiff !== undefined ? precalculatedDiff : (new Date() - new Date(dobStr));
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -590,37 +612,74 @@ function calculateAge(dobStr) {
     };
 }
 
+/**
+ * Initialize high-frequency update loop for live biometrics.
+ * Uses lazy DOM caching, dirty checking, and hoisted dependencies for maximum performance.
+ */
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (liveUpdateInterval) clearInterval(liveUpdateInterval);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    const elementsCache = {};
+    const dob = state.user.dobDate || new Date(state.user.dob);
+
+    /**
+     * Efficiently update DOM elements with dirty checking.
+     * @param {string} id - Element ID
+     * @param {string|number} value - New value
+     */
+    const updateStat = (id, value) => {
+        if (!elementsCache[id]) {
+            elementsCache[id] = document.getElementById(id);
+        }
+        const el = elementsCache[id];
+        if (el) {
+            const stringValue = String(value);
+            if (el.textContent !== stringValue) {
+                el.textContent = stringValue;
+            }
+        }
+    };
+
+    liveUpdateInterval = setInterval(() => {
+        if (!state.user.dob) return;
+
+        const now = new Date();
+        const diff = now - dob;
+        const age = calculateAge(dob, diff);
+
+        // Update time elapsed counters
+        updateStat('val-seconds', liveStatsFormatter.format(Math.floor(diff / 1000)));
+        updateStat('val-years', age.years);
+        updateStat('val-months', liveStatsFormatter.format(Math.floor(diff / 2629800000)));
+        updateStat('val-weeks', liveStatsFormatter.format(Math.floor(diff / 604800000)));
+        updateStat('val-days', liveStatsFormatter.format(Math.floor(diff / 86400000)));
+        updateStat('val-hours', liveStatsFormatter.format(Math.floor(diff / 3600000)));
+        updateStat('val-minutes', liveStatsFormatter.format(age.minutes));
+
+        // Use pre-calculated bornDay to avoid expensive toLocaleDateString on every tick
+        updateStat('val-born-day', state.user.bornDay || dob.toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase());
 
         const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
 
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        // Update biometric milestones
+        updateStat('est-heart', formatLarge(mins * 72));
+        updateStat('est-breaths', formatLarge(mins * 14));
+        updateStat('est-sleep', formatLarge(days * 8));
+        updateStat('est-eat', formatLarge(days * 1.5));
+        updateStat('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 
+/**
+ * Format large numbers for display.
+ * @param {number} num - The number to format
+ */
 function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    // Use hoisted formatter for consistent localization and better performance
+    return liveStatsFormatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
