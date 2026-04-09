@@ -207,22 +207,43 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
-function updateLiveCounters() {
-    if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
+// Hoist formatter and element cache for the live counter loop
+const liveFormatter = new Intl.NumberFormat(undefined);
+const liveElementCache = {};
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+function updateLiveCounterElement(id, value) {
+    if (!liveElementCache[id]) {
+        liveElementCache[id] = document.getElementById(id);
+    }
+    const el = liveElementCache[id];
+    if (el) {
+        const newVal = liveFormatter.format(value);
+        // Dirty checking: minimize DOM activity
+        if (el.textContent !== newVal) {
+            el.textContent = newVal;
+        }
+    }
 }
 
-function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+function updateLiveCounters() {
+    if (!userData.dob) return;
+    const diff = new Date() - userData.dob;
+    const age = calculateAge(null, diff);
+
+    updateLiveCounterElement('counter-years', age.years);
+    updateLiveCounterElement('counter-months', age.months);
+    updateLiveCounterElement('counter-weeks', age.weeks);
+    updateLiveCounterElement('counter-days', age.days);
+    updateLiveCounterElement('counter-hours', age.hours);
+    updateLiveCounterElement('counter-minutes', age.minutes);
+    updateLiveCounterElement('counter-seconds', age.seconds);
+}
+
+/**
+ * Optimized calculateAge to optionally accept pre-calculated diff
+ */
+function calculateAge(birthDate, precalculatedDiff = null) {
+    const diff = precalculatedDiff !== null ? precalculatedDiff : (new Date() - birthDate);
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
