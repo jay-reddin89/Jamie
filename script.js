@@ -22,11 +22,27 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     setupEventListeners();
+
+    // Prevent future birth dates
+    const dobInput = document.getElementById('user-dob');
+    if (dobInput) {
+        dobInput.max = new Date().toISOString().split('T')[0];
+    }
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    const onboardingForm = document.getElementById('user-onboarding-form');
+    if (onboardingForm) {
+        onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (elements.generateBtn.classList.contains('hidden')) {
+                saveUserData();
+            } else {
+                startGeneration();
+            }
+        });
+    }
+
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
@@ -54,11 +70,15 @@ function saveUserData() {
     state.user.country = document.getElementById('user-country').value;
     state.user.gender = document.getElementById('user-gender').value;
 
-    if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+    if (!state.user.name || !state.user.dob) {
+        showNotification('MISSING IDENTIFIER/SEQUENCE');
+        return false;
+    }
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
     elements.generateBtn.classList.remove('hidden');
+    return true;
 }
 
 function handlePicUpload(e) {
@@ -97,6 +117,9 @@ function showNotification(msg) {
 }
 
 function startGeneration() {
+    // Ensure data is saved before generating results
+    if (!saveUserData()) return;
+
     elements.inputSection.classList.add('hidden');
     elements.loadingSection.classList.remove('hidden');
     let progress = 0;
@@ -108,6 +131,7 @@ function startGeneration() {
             setTimeout(showResults, 600);
         }
         elements.progressBar.style.width = `${progress}%`;
+        elements.progressBar.setAttribute('aria-valuenow', Math.floor(progress));
     }, 150);
 }
 
@@ -189,7 +213,7 @@ function renderResults() {
     const profile = document.createElement('div');
     profile.className = 'card profile-card';
     profile.innerHTML = `
-        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img">` : '🧬'}</div>
+        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img" alt="User profile picture">` : '🧬'}</div>
         <div class="profile-details">
             <div class="sub-label">SUBJECT</div>
             <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>

@@ -17,7 +17,7 @@
                 <div class="logo-v3">LIFE.STATS</div>
                 <div class="sys-id">SYS.ID: 9X-441 // ONLINE</div>
             </div>
-            <button id="settings-btn" class="settings-icon" aria-label="Settings">
+            <button id="settings-btn" class="settings-icon" aria-label="Settings" title="Settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings">
                     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
                     <circle cx="12" cy="12" r="3"/>
@@ -28,18 +28,18 @@
         <main id="main-content">
             <!-- 1. Input Screen -->
             <section id="input-section" class="input-screen">
-                <div class="card">
+                <form id="user-onboarding-form" class="card">
                     <h3 class="auth-header"></h3>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Persons Name</label>
-                        <input type="text" id="user-name" class="input-field" placeholder="Name">
+                        <label for="user-name" class="item-subtitle">Person's Name</label>
+                        <input type="text" id="user-name" class="input-field" placeholder="Name" required>
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Date Of Birth</label>
-                        <input type="date" id="user-dob" class="input-field">
+                        <label for="user-dob" class="item-subtitle">Date Of Birth</label>
+                        <input type="date" id="user-dob" class="input-field" required>
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Gender  (OPTIONAL)</label>
+                        <label for="user-gender" class="item-subtitle">Gender (OPTIONAL)</label>
                         <select id="user-gender" class="input-field">
                             <option value="">SELECT...</option>
                             <option value="MALE">MALE</option>
@@ -48,24 +48,24 @@
                         </select>
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Country (OPTIONAL)</label>
+                        <label for="user-country" class="item-subtitle">Country (OPTIONAL)</label>
                         <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Selfie Pic</label>
+                        <label for="user-pic" class="item-subtitle">Selfie Pic</label>
                         <input type="file" id="user-pic" class="input-field" accept="image/*">
                     </div>
-                    <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
-                    <button id="generate-btn" class="btn-primary btn-scan hidden">EXECUTE SCAN</button>
-                </div>
+                    <button id="save-user-btn" type="submit" class="btn-primary">SAVE & INITIALIZE</button>
+                    <button id="generate-btn" type="submit" class="btn-primary btn-scan hidden">EXECUTE SCAN</button>
+                </form>
             </section>
 
             <!-- 2. Loading Screen -->
             <section id="loading-section" class="hidden">
                 <div class="loading-box">
-                    <div class="item-subtitle" id="loading-status">SCANNING DATA REPOSITORIES...</div>
+                    <div class="item-subtitle" id="loading-status" aria-live="polite">SCANNING DATA REPOSITORIES...</div>
                     <div class="progress-bar">
-                        <div id="progress-bar" class="progress-fill"></div>
+                        <div id="progress-bar" class="progress-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
                     </div>
                 </div>
             </section>

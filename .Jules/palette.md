@@ -1,0 +1,3 @@
+## 2025-05-14 - Multi-step Form Keyboard Navigation
+**Learning:** In multi-step onboarding flows where sections are progressively revealed (e.g., Save -> Execute), wrapping the controls in a `<form>` and managing the `submit` event allows for a seamless "Enter to continue" experience. This is more accessible and intuitive than relying solely on button click listeners, as it leverages native browser behavior and provides a standard interaction model for keyboard users.
+**Action:** Always wrap onboarding and multi-step inputs in a `<form>` element and centralize logic in a `submit` handler to ensure consistent keyboard accessibility and smooth progression.
