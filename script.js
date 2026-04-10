@@ -22,11 +22,31 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     setupEventListeners();
+    initForm();
 });
 
+function initForm() {
+    // Set max date for DOB to today
+    const dobInput = document.getElementById('user-dob');
+    if (dobInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dobInput.setAttribute('max', today);
+    }
+}
+
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    const onboardingForm = document.getElementById('user-onboarding-form');
+    if (onboardingForm) {
+        onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (elements.generateBtn.classList.contains('hidden')) {
+                saveUserData();
+            } else {
+                startGeneration();
+            }
+        });
+    }
+
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
@@ -189,7 +209,7 @@ function renderResults() {
     const profile = document.createElement('div');
     profile.className = 'card profile-card';
     profile.innerHTML = `
-        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img">` : '🧬'}</div>
+        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img" alt="User profile picture">` : '🧬'}</div>
         <div class="profile-details">
             <div class="sub-label">SUBJECT</div>
             <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>
