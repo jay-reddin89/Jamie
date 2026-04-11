@@ -15,6 +15,10 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// Performance Caches
+const liveElementCache = {};
+const liveFormatter = new Intl.NumberFormat();
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -207,22 +211,46 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
-function updateLiveCounters() {
-    if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
-
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+/**
+ * Internal helper for updateLiveCounters to update stats with dirty checking.
+ */
+function updateLiveCounterElement(id, val) {
+    if (!liveElementCache[id]) {
+        liveElementCache[id] = document.getElementById(id);
+    }
+    const el = liveElementCache[id];
+    const strVal = liveFormatter.format(val);
+    if (el && el.textContent !== strVal) {
+        el.textContent = strVal;
+    }
 }
 
-function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+/**
+ * Updates live biometric counters.
+ * Optimization: Uses persistent DOM element cache, dirty checking, and a hoisted Intl.NumberFormat
+ * to minimize main thread activity during high-frequency ticks.
+ */
+function updateLiveCounters() {
+    if (!userData.dob) return;
+
+    const diff = new Date() - userData.dob;
+    const age = calculateAge(null, diff);
+
+    updateLiveCounterElement('counter-years', age.years);
+    updateLiveCounterElement('counter-months', age.months);
+    updateLiveCounterElement('counter-weeks', age.weeks);
+    updateLiveCounterElement('counter-days', age.days);
+    updateLiveCounterElement('counter-hours', age.hours);
+    updateLiveCounterElement('counter-minutes', age.minutes);
+    updateLiveCounterElement('counter-seconds', age.seconds);
+}
+
+/**
+ * Calculates age components from a birth date.
+ * Optimization: Accepts an optional precalculatedDiff to avoid redundant Date allocations.
+ */
+function calculateAge(birthDate, precalculatedDiff) {
+    const diff = precalculatedDiff !== undefined ? precalculatedDiff : (new Date() - birthDate);
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
