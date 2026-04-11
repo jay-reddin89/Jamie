@@ -22,11 +22,28 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     setupEventListeners();
+    // Prevent future dates in DOB picker
+    const dobInput = document.getElementById('user-dob');
+    if (dobInput) {
+        dobInput.max = new Date().toISOString().split('T')[0];
+    }
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    const onboardingForm = document.getElementById('user-onboarding-form');
+    if (onboardingForm) {
+        onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // If generate button is hidden, we are in the first step (saving)
+            // If it's visible, we are in the second step (generating)
+            if (elements.generateBtn.classList.contains('hidden')) {
+                saveUserData();
+            } else {
+                startGeneration();
+            }
+        });
+    }
+
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
