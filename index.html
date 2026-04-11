@@ -30,33 +30,35 @@
             <section id="input-section" class="input-screen">
                 <div class="card">
                     <h3 class="auth-header"></h3>
-                    <div class="form-field-wrapper">
-                        <label class="item-subtitle">Persons Name</label>
-                        <input type="text" id="user-name" class="input-field" placeholder="Name">
-                    </div>
-                    <div class="form-field-wrapper">
-                        <label class="item-subtitle">Date Of Birth</label>
-                        <input type="date" id="user-dob" class="input-field">
-                    </div>
-                    <div class="form-field-wrapper">
-                        <label class="item-subtitle">Gender  (OPTIONAL)</label>
-                        <select id="user-gender" class="input-field">
-                            <option value="">SELECT...</option>
-                            <option value="MALE">MALE</option>
-                            <option value="FEMALE">FEMALE</option>
-                            <option value="OTHER">OTHER</option>
-                        </select>
-                    </div>
-                    <div class="form-field-wrapper">
-                        <label class="item-subtitle">Country (OPTIONAL)</label>
-                        <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
-                    </div>
-                    <div class="form-field-wrapper">
-                        <label class="item-subtitle">Selfie Pic</label>
-                        <input type="file" id="user-pic" class="input-field" accept="image/*">
-                    </div>
-                    <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
-                    <button id="generate-btn" class="btn-primary btn-scan hidden">EXECUTE SCAN</button>
+                    <form id="user-onboarding-form">
+                        <div class="form-field-wrapper">
+                            <label for="user-name" class="item-subtitle">Person's Name</label>
+                            <input type="text" id="user-name" class="input-field" placeholder="Name" required>
+                        </div>
+                        <div class="form-field-wrapper">
+                            <label for="user-dob" class="item-subtitle">Date Of Birth</label>
+                            <input type="date" id="user-dob" class="input-field" required>
+                        </div>
+                        <div class="form-field-wrapper">
+                            <label for="user-gender" class="item-subtitle">Gender (OPTIONAL)</label>
+                            <select id="user-gender" class="input-field">
+                                <option value="">SELECT...</option>
+                                <option value="MALE">MALE</option>
+                                <option value="FEMALE">FEMALE</option>
+                                <option value="OTHER">OTHER</option>
+                            </select>
+                        </div>
+                        <div class="form-field-wrapper">
+                            <label for="user-country" class="item-subtitle">Country (OPTIONAL)</label>
+                            <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
+                        </div>
+                        <div class="form-field-wrapper">
+                            <label for="user-pic" class="item-subtitle">Selfie Pic</label>
+                            <input type="file" id="user-pic" class="input-field" accept="image/*">
+                        </div>
+                        <button type="submit" id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
+                        <button type="submit" id="generate-btn" class="btn-primary btn-scan hidden">EXECUTE SCAN</button>
+                    </form>
                 </div>
             </section>
 

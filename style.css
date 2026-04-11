@@ -254,6 +254,8 @@ header {
     font-size: 0.75rem;
     color: var(--md-sys-color-on-surface-variant);
     margin-top: 4px;
+    display: block;
+    cursor: pointer;
 }
 
 .item-val {
@@ -323,6 +325,11 @@ header {
     box-shadow: var(--md-elevation-2);
 }
 
+.reinit-btn:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
 /* Form Styles */
 .input-screen {
     padding: 24px 16px;
@@ -345,6 +352,11 @@ header {
     outline: none;
     border-color: var(--md-sys-color-primary);
     box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+}
+
+.input-field:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .input-field::placeholder {
@@ -370,6 +382,11 @@ header {
 .btn-primary:hover {
     background-color: #0a3a87;
     box-shadow: var(--md-elevation-2);
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .hidden { display: none !important; }
@@ -586,6 +603,11 @@ header {
 .settings-icon:hover {
     background-color: var(--md-sys-color-surface-variant);
     transform: rotate(30deg);
+}
+
+.settings-icon:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .settings-icon svg {
