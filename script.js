@@ -108,6 +108,10 @@ function startGeneration() {
             setTimeout(showResults, 600);
         }
         elements.progressBar.style.width = `${progress}%`;
+        const progressContainer = elements.progressBar.parentElement;
+        if (progressContainer) {
+            progressContainer.setAttribute('aria-valuenow', Math.floor(progress));
+        }
     }, 150);
 }
 
