@@ -254,6 +254,11 @@ header {
     font-size: 0.75rem;
     color: var(--md-sys-color-on-surface-variant);
     margin-top: 4px;
+    display: block;
+}
+
+label.item-subtitle {
+    cursor: pointer;
 }
 
 .item-val {
@@ -321,6 +326,14 @@ header {
 .reinit-btn:hover {
     background-color: #0a3a87;
     box-shadow: var(--md-elevation-2);
+}
+
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible,
+.settings-icon:focus-visible,
+.input-field:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 /* Form Styles */
