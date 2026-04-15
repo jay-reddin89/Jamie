@@ -22,6 +22,12 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     setupEventListeners();
+
+    // Prevent future birth dates
+    const dobInput = document.getElementById('user-dob');
+    if (dobInput) {
+        dobInput.max = new Date().toISOString().split('T')[0];
+    }
 });
 
 function setupEventListeners() {
@@ -32,6 +38,13 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    // Escape key listener for modal
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.settingsModal.classList.contains('hidden')) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
 }
 
 function loadUserData() {
@@ -49,12 +62,17 @@ function loadUserData() {
 }
 
 function saveUserData() {
-    state.user.name = document.getElementById('user-name').value;
-    state.user.dob = document.getElementById('user-dob').value;
+    const nameInput = document.getElementById('user-name');
+    const dobInput = document.getElementById('user-dob');
+
+    if (!nameInput.reportValidity() || !dobInput.reportValidity()) {
+        return showNotification('MISSING IDENTIFIER/SEQUENCE');
+    }
+
+    state.user.name = nameInput.value;
+    state.user.dob = dobInput.value;
     state.user.country = document.getElementById('user-country').value;
     state.user.gender = document.getElementById('user-gender').value;
-
-    if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
