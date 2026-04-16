@@ -3,8 +3,12 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    liveUpdateInterval: null
 };
+
+// Hoisted formatters and helpers to avoid redundant object allocation in high-frequency loops
+const liveStatsFormatter = new Intl.NumberFormat('en-US');
 
 const elements = {
     inputSection: document.getElementById('input-section'),
@@ -590,29 +594,64 @@ function calculateAge(dobStr) {
     };
 }
 
+/**
+ * Optimizes high-frequency live updates by using a lazy DOM element cache,
+ * dirty checking to minimize DOM writes, and pre-calculated date objects.
+ * Hoisted formatters are used to avoid redundant object allocation.
+ */
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
+    if (!state.user.dob) return;
+
+    const dobDate = new Date(state.user.dob);
+    const bornDay = dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+    const elementsCache = {};
+    const valuesCache = {};
+
+    /**
+     * Updates a DOM element with a value only if it has changed.
+     * Implements lazy caching of DOM elements for performance.
+     */
+    const updateStat = (id, value) => {
+        const stringValue = String(value);
+        if (valuesCache[id] === stringValue) return;
+
+        if (!(id in elementsCache)) {
+            elementsCache[id] = document.getElementById(id);
+        }
+
+        const el = elementsCache[id];
+        if (el) {
+            el.textContent = stringValue;
+            valuesCache[id] = stringValue;
+        }
+    };
+
+    // Set constant values once outside the loop
+    updateStat('val-born-day', bornDay);
+
+    state.liveUpdateInterval = setInterval(() => {
+        const now = new Date();
+        const diff = now - dobDate;
         const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        const totalSeconds = Math.floor(diff / 1000);
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const totalDays = Math.floor(diff / 86400000);
 
-        const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
+        updateStat('val-seconds', liveStatsFormatter.format(totalSeconds));
+        updateStat('val-years', age.years);
+        updateStat('val-months', liveStatsFormatter.format(Math.floor(diff / 2629800000)));
+        updateStat('val-weeks', liveStatsFormatter.format(Math.floor(diff / 604800000)));
+        updateStat('val-days', liveStatsFormatter.format(totalDays));
+        updateStat('val-hours', liveStatsFormatter.format(Math.floor(diff / 3600000)));
+        updateStat('val-minutes', liveStatsFormatter.format(age.minutes));
 
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        updateStat('est-heart', formatLarge(totalMinutes * 72));
+        updateStat('est-breaths', formatLarge(totalMinutes * 14));
+        updateStat('est-sleep', formatLarge(totalDays * 8));
+        updateStat('est-eat', formatLarge(totalDays * 1.5));
+        updateStat('est-blinks', formatLarge(totalDays * 15 * 60 * 16));
     }, 1000);
 }
 
