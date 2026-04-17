@@ -16,17 +16,33 @@ const elements = {
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
     progressBar: document.getElementById('progress-bar'),
-    notification: document.getElementById('notification')
+    notification: document.getElementById('notification'),
+    onboardingForm: document.getElementById('user-onboarding-form')
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     setupEventListeners();
+    setupFormValidation();
 });
 
+function setupFormValidation() {
+    const dobInput = document.getElementById('user-dob');
+    if (dobInput) {
+        dobInput.max = new Date().toISOString().split('T')[0];
+    }
+}
+
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
-    elements.generateBtn.addEventListener('click', startGeneration);
+    elements.onboardingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (elements.generateBtn.classList.contains('hidden')) {
+            saveUserData();
+        } else {
+            startGeneration();
+        }
+    });
+
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
@@ -54,7 +70,7 @@ function saveUserData() {
     state.user.country = document.getElementById('user-country').value;
     state.user.gender = document.getElementById('user-gender').value;
 
-    if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+    if (!elements.onboardingForm.reportValidity()) return;
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
