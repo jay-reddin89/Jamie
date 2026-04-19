@@ -347,6 +347,11 @@ header {
     box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
 }
 
+.input-field:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
 .input-field::placeholder {
     color: var(--md-sys-color-on-surface-variant);
 }
@@ -370,6 +375,12 @@ header {
 .btn-primary:hover {
     background-color: #0a3a87;
     box-shadow: var(--md-elevation-2);
+}
+
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .hidden { display: none !important; }
@@ -588,6 +599,12 @@ header {
     transform: rotate(30deg);
 }
 
+.settings-icon:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+    background-color: var(--md-sys-color-surface-variant);
+}
+
 .settings-icon svg {
     width: 22px;
     height: 22px;
@@ -724,4 +741,8 @@ header {
 
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
+}
+
+.text-error {
+    color: var(--md-sys-color-error);
 }
