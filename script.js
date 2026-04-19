@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    liveUpdateInterval: null
 };
 
 const elements = {
@@ -591,29 +592,53 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (!state.user.dob) return;
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    const dobDate = new Date(state.user.dob);
+    const elementsCache = {};
+    const liveStatsFormatter = new Intl.NumberFormat('en-US');
+
+    // Update static data once outside the loop
+    updateStat('val-born-day', dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase(), elementsCache);
+
+    state.liveUpdateInterval = setInterval(() => {
+        const now = new Date();
+        const diff = now - dobDate;
+        const age = calculateAge(state.user.dob);
+
+        updateStat('val-seconds', liveStatsFormatter.format(Math.floor(diff / 1000)), elementsCache);
+        updateStat('val-years', age.years, elementsCache);
+        updateStat('val-months', liveStatsFormatter.format(Math.floor(diff / 2629800000)), elementsCache);
+        updateStat('val-weeks', liveStatsFormatter.format(Math.floor(diff / 604800000)), elementsCache);
+        updateStat('val-days', liveStatsFormatter.format(Math.floor(diff / 86400000)), elementsCache);
+        updateStat('val-hours', liveStatsFormatter.format(Math.floor(diff / 3600000)), elementsCache);
+        updateStat('val-minutes', liveStatsFormatter.format(age.minutes), elementsCache);
 
         const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
-
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        updateStat('est-heart', formatLarge(mins * 72), elementsCache);
+        updateStat('est-breaths', formatLarge(mins * 14), elementsCache);
+        updateStat('est-sleep', formatLarge(days * 8), elementsCache);
+        updateStat('est-eat', formatLarge(days * 1.5), elementsCache);
+        updateStat('est-blinks', formatLarge(days * 15 * 60 * 16), elementsCache);
     }, 1000);
+}
+
+/**
+ * Updates a DOM element's textContent with lazy caching and dirty checking.
+ * @param {string} id - The element ID.
+ * @param {string|number} value - The new value.
+ * @param {Object} cache - A cache object for element references.
+ */
+function updateStat(id, value, cache) {
+    if (!(id in cache)) {
+        cache[id] = document.getElementById(id);
+    }
+    const el = cache[id];
+    const valStr = String(value);
+    if (el && el.textContent !== valStr) {
+        el.textContent = valStr;
+    }
 }
 
 function formatLarge(num) {
