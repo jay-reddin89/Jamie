@@ -25,7 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
+    const onboardingForm = document.getElementById('user-onboarding-form');
+    if (onboardingForm) {
+        onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveUserData();
+        });
+    } else {
+        elements.saveUserBtn.addEventListener('click', saveUserData);
+    }
     elements.generateBtn.addEventListener('click', startGeneration);
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
@@ -54,7 +62,8 @@ function saveUserData() {
     state.user.country = document.getElementById('user-country').value;
     state.user.gender = document.getElementById('user-gender').value;
 
-    if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+    if (!state.user.name) return showNotification('MISSING NAME');
+    if (!state.user.dob) return showNotification('MISSING DATE OF BIRTH');
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');

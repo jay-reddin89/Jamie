@@ -725,3 +725,16 @@ header {
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
 }
+
+.text-error {
+    color: var(--md-sys-color-error);
+}
+
+/* Keyboard Focus States */
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible,
+.settings-icon:focus-visible,
+.input-field:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
