@@ -1,0 +1,3 @@
+## 2025-05-14 - Form Accessibility and Native Validation
+**Learning:** In a design system with custom interactive logic, wrapping inputs in a `<form>` element is essential for enabling native browser features like the `required` attribute validation and proper 'Enter' key submission handling. Furthermore, explicit label-to-input association via the `for` attribute is a critical accessibility standard that was missing in several iterations of the onboarding form.
+**Action:** Always wrap input groups in a semantic `<form>` and ensure every input has a uniquely associated `<label>` before implementing custom JS validation.
