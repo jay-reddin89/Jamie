@@ -32,6 +32,13 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    // Close settings modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.settingsModal.classList.contains('hidden')) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
 }
 
 function loadUserData() {

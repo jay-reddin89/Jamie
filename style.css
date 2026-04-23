@@ -725,3 +725,13 @@ header {
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
 }
+
+/* Accessibility Improvements */
+label.item-subtitle {
+    cursor: pointer;
+}
+
+:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
