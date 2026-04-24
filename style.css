@@ -256,6 +256,11 @@ header {
     margin-top: 4px;
 }
 
+label.item-subtitle {
+    cursor: pointer;
+    display: block;
+}
+
 .item-val {
     color: var(--md-sys-color-secondary);
     font-weight: var(--md-font-weight-semibold);
@@ -345,6 +350,14 @@ header {
     outline: none;
     border-color: var(--md-sys-color-primary);
     box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+}
+
+.input-field:focus-visible,
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible,
+.settings-icon:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .input-field::placeholder {
