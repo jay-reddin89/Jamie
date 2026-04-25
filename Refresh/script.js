@@ -207,17 +207,28 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
+const liveFormatter = new Intl.NumberFormat('en-US');
+const elementsCache = {};
+
 function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    const updateLiveCounterElement = (id, val) => {
+        if (!(id in elementsCache)) {
+            elementsCache[id] = document.getElementById(id);
+        }
+        const el = elementsCache[id];
+        if (el) el.textContent = val;
+    };
+
+    updateLiveCounterElement('counter-years', liveFormatter.format(age.years));
+    updateLiveCounterElement('counter-months', liveFormatter.format(age.months));
+    updateLiveCounterElement('counter-weeks', liveFormatter.format(age.weeks));
+    updateLiveCounterElement('counter-days', liveFormatter.format(age.days));
+    updateLiveCounterElement('counter-hours', liveFormatter.format(age.hours));
+    updateLiveCounterElement('counter-minutes', liveFormatter.format(age.minutes));
+    updateLiveCounterElement('counter-seconds', liveFormatter.format(age.seconds));
 }
 
 function calculateAge(birthDate) {
