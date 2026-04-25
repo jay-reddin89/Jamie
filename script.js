@@ -25,7 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
+    const onboardingForm = document.getElementById('onboarding-form');
+    if (onboardingForm) {
+        onboardingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveUserData();
+        });
+    }
+
     elements.generateBtn.addEventListener('click', startGeneration);
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));

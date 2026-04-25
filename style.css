@@ -725,3 +725,25 @@ header {
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
 }
+
+/* Accessibility & Utilities */
+.text-error {
+    color: var(--md-sys-color-error);
+}
+
+:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
+.input-field:focus-visible {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.2);
+}
+
+.settings-icon:focus-visible,
+.btn-primary:focus-visible,
+.reinit-btn:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
