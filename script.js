@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    liveUpdateInterval: null
 };
 
 const elements = {
@@ -231,6 +232,7 @@ function renderResults() {
 
     document.getElementById('download-pdf-btn').addEventListener('click', generatePDF);
 
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
     startLiveUpdates();
 }
 
@@ -590,29 +592,71 @@ function calculateAge(dobStr) {
     };
 }
 
+/**
+ * Optimized high-frequency live update loop.
+ * Implements DOM element caching, formatter hoisting, and pre-calculation
+ * to minimize per-tick CPU overhead and object allocations.
+ */
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (!state.user.dob) return;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
 
-        const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
+    const birthDate = new Date(state.user.dob);
+    const bornDay = birthDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
 
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+    // DOM Element Cache: Avoids repeated lookups by ID every tick (~13 lookups saved)
+    const elementsCache = {
+        'val-seconds': document.getElementById('val-seconds'),
+        'val-years': document.getElementById('val-years'),
+        'val-months': document.getElementById('val-months'),
+        'val-weeks': document.getElementById('val-weeks'),
+        'val-days': document.getElementById('val-days'),
+        'val-hours': document.getElementById('val-hours'),
+        'val-minutes': document.getElementById('val-minutes'),
+        'val-born-day': document.getElementById('val-born-day'),
+        'est-heart': document.getElementById('est-heart'),
+        'est-breaths': document.getElementById('est-breaths'),
+        'est-sleep': document.getElementById('est-sleep'),
+        'est-eat': document.getElementById('est-eat'),
+        'est-blinks': document.getElementById('est-blinks')
+    };
+
+    // Hoist number formatter to prevent redundant instantiation in every tick
+    const liveStatsFormatter = new Intl.NumberFormat('en-US');
+
+    // Update static data once before loop
+    if (elementsCache['val-born-day']) {
+        elementsCache['val-born-day'].textContent = bornDay;
+    }
+
+    state.liveUpdateInterval = setInterval(() => {
+        const now = new Date();
+        const diff = now - birthDate;
+        const age = calculateAge(state.user.dob); // Maintain string parity for calculateAge logic
+
+        const updateEl = (id, val) => {
+            const el = elementsCache[id];
+            if (el) el.textContent = val;
+        };
+
+        // Biometric Updates
+        updateEl('val-seconds', liveStatsFormatter.format(Math.floor(diff / 1000)));
+        updateEl('val-years', age.years);
+        updateEl('val-months', liveStatsFormatter.format(Math.floor(diff / 2629800000)));
+        updateEl('val-weeks', liveStatsFormatter.format(Math.floor(diff / 604800000)));
+        updateEl('val-days', liveStatsFormatter.format(Math.floor(diff / 86400000)));
+        updateEl('val-hours', liveStatsFormatter.format(Math.floor(diff / 3600000)));
+        updateEl('val-minutes', liveStatsFormatter.format(age.minutes));
+
+        // Estimated Statistics
+        const mins = diff / 60000;
+        const days = diff / 86400000;
+        updateEl('est-heart', formatLarge(mins * 72));
+        updateEl('est-breaths', formatLarge(mins * 14));
+        updateEl('est-sleep', formatLarge(days * 8));
+        updateEl('est-eat', formatLarge(days * 1.5));
+        updateEl('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 
