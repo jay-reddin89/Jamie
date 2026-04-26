@@ -25,7 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    elements.saveUserBtn.addEventListener('click', saveUserData);
+    const onboardingForm = document.getElementById('onboarding-form');
+    if (onboardingForm) {
+        onboardingForm.addEventListener('submit', saveUserData);
+    }
     elements.generateBtn.addEventListener('click', startGeneration);
     elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
@@ -48,7 +51,8 @@ function loadUserData() {
     }
 }
 
-function saveUserData() {
+function saveUserData(event) {
+    if (event) event.preventDefault();
     state.user.name = document.getElementById('user-name').value;
     state.user.dob = document.getElementById('user-dob').value;
     state.user.country = document.getElementById('user-country').value;
