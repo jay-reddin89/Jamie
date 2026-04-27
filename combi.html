@@ -548,6 +548,21 @@ header {
     font-family: var(--font-mono);
 }
 
+.settings-btn-v3 {
+    cursor: pointer;
+    font-size: 1.2rem;
+    background: transparent;
+    border: none;
+    color: inherit;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.settings-btn-v3:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
 .card {
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
@@ -586,7 +601,7 @@ header {
                 <div class="logo-v3">LIFE.STATS_V3</div>
                 <div class="sys-id">SYS.ID: 9X-441 // ONLINE</div>
             </div>
-            <div id="settings-btn" style="cursor: pointer; font-size: 1.2rem;">⋮</div>
+            <button id="settings-btn" class="settings-btn-v3" aria-label="Settings" title="Settings">⋮</button>
         </header>
 
         <main id="main-content">
@@ -595,15 +610,15 @@ header {
                 <div class="card" style="margin: 0;">
                     <h3 style="margin-bottom: 16px; font-size: 0.8rem; color: var(--accent-cyan);">AUTHENTICATION REQUIRED</h3>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">SUBJECT NAME</label>
-                        <input type="text" id="user-name" class="input-field" placeholder="ENTER IDENTIFIER">
+                        <label for="user-name" class="item-subtitle">SUBJECT NAME</label>
+                        <input type="text" id="user-name" class="input-field" placeholder="ENTER IDENTIFIER" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">BIRTH SEQUENCE (DOB)</label>
-                        <input type="date" id="user-dob" class="input-field">
+                        <label for="user-dob" class="item-subtitle">BIRTH SEQUENCE (DOB)</label>
+                        <input type="date" id="user-dob" class="input-field" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">GENDER (OPTIONAL)</label>
+                        <label for="user-gender" class="item-subtitle">GENDER (OPTIONAL)</label>
                         <select id="user-gender" class="input-field">
                             <option value="">SELECT...</option>
                             <option value="MALE">MALE</option>
@@ -612,11 +627,11 @@ header {
                         </select>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">GEOLOCATION (COUNTRY)</label>
+                        <label for="user-country" class="item-subtitle">GEOLOCATION (COUNTRY)</label>
                         <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">BIOMETRIC PIC</label>
+                        <label for="user-pic" class="item-subtitle">BIOMETRIC PIC</label>
                         <input type="file" id="user-pic" class="input-field" accept="image/*">
                     </div>
                     <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
@@ -651,19 +666,19 @@ header {
 
                 <h4 class="item-subtitle" style="margin-bottom: 8px;">DATA MODULES</h4>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <label><input type="checkbox" class="section-toggle" data-section="realtime" checked> Live Stats</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="facts" checked> Name Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="livedthrough" checked> Events Lived</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="top" checked> Top Media Year Born</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="standing" checked> GLOBAL STANDING</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="astronomical" checked> Star Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="transit" checked> Earth Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="economic" checked> Economy Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="tech" checked> Tech Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="network" checked> Network Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="eco" checked> Eco Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="power" checked> Power Facts</label>
-                    <label><input type="checkbox" class="section-toggle" data-section="knowledge" checked> Knowledge Facts</label>
+                    <label for="toggle-realtime"><input type="checkbox" id="toggle-realtime" class="section-toggle" data-section="realtime" checked> Live Stats</label>
+                    <label for="toggle-facts"><input type="checkbox" id="toggle-facts" class="section-toggle" data-section="facts" checked> Name Facts</label>
+                    <label for="toggle-livedthrough"><input type="checkbox" id="toggle-livedthrough" class="section-toggle" data-section="livedthrough" checked> Events Lived</label>
+                    <label for="toggle-top"><input type="checkbox" id="toggle-top" class="section-toggle" data-section="top" checked> Top Media Year Born</label>
+                    <label for="toggle-standing"><input type="checkbox" id="toggle-standing" class="section-toggle" data-section="standing" checked> GLOBAL STANDING</label>
+                    <label for="toggle-astronomical"><input type="checkbox" id="toggle-astronomical" class="section-toggle" data-section="astronomical" checked> Star Facts</label>
+                    <label for="toggle-transit"><input type="checkbox" id="toggle-transit" class="section-toggle" data-section="transit" checked> Earth Facts</label>
+                    <label for="toggle-economic"><input type="checkbox" id="toggle-economic" class="section-toggle" data-section="economic" checked> Economy Facts</label>
+                    <label for="toggle-tech"><input type="checkbox" id="toggle-tech" class="section-toggle" data-section="tech" checked> Tech Facts</label>
+                    <label for="toggle-network"><input type="checkbox" id="toggle-network" class="section-toggle" data-section="network" checked> Network Facts</label>
+                    <label for="toggle-eco"><input type="checkbox" id="toggle-eco" class="section-toggle" data-section="eco" checked> Eco Facts</label>
+                    <label for="toggle-power"><input type="checkbox" id="toggle-power" class="section-toggle" data-section="power" checked> Power Facts</label>
+                    <label for="toggle-knowledge"><input type="checkbox" id="toggle-knowledge" class="section-toggle" data-section="knowledge" checked> Knowledge Facts</label>
                 </div>
 
                 <div style="display: flex; gap: 8px; margin-top: 24px;">
