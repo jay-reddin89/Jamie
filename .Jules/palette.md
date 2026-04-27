@@ -1,0 +1,3 @@
+## 2025-05-14 - Accessibility & UX Refinements
+**Learning:** Explicitly linking labels to inputs via `for` and `id` attributes is crucial for accessibility, even when nesting inputs inside labels, as it provides a clearer mapping for some assistive technologies and more robust click targets. Adding `focus-visible` styles ensures a high-contrast experience for keyboard users without affecting mouse users' visual experience.
+**Action:** Always ensure all form inputs have associated labels with matching `for`/`id` attributes, use `required` for mandatory fields to leverage native validation, and implement `:focus-visible` for all interactive elements.
