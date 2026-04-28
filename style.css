@@ -725,3 +725,14 @@ header {
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
 }
+
+.text-error {
+    color: var(--md-sys-color-error);
+    font-weight: var(--md-font-weight-bold);
+}
+
+.notification-toast.error {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+    border-color: var(--md-sys-color-on-error);
+}
