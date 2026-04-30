@@ -552,6 +552,15 @@ header {
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
+.text-error {
+    color: #ff7043;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
 /* PDF Export Polish */
 @media print {
     body { background: #fff !important; color: #000 !important; }
@@ -595,15 +604,15 @@ header {
                 <div class="card" style="margin: 0;">
                     <h3 style="margin-bottom: 16px; font-size: 0.8rem; color: var(--accent-cyan);">AUTHENTICATION REQUIRED</h3>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">SUBJECT NAME</label>
-                        <input type="text" id="user-name" class="input-field" placeholder="ENTER IDENTIFIER">
+                        <label for="user-name" class="item-subtitle">SUBJECT NAME <span class="text-error">*</span></label>
+                        <input type="text" id="user-name" class="input-field" placeholder="ENTER IDENTIFIER" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">BIRTH SEQUENCE (DOB)</label>
-                        <input type="date" id="user-dob" class="input-field">
+                        <label for="user-dob" class="item-subtitle">BIRTH SEQUENCE (DOB) <span class="text-error">*</span></label>
+                        <input type="date" id="user-dob" class="input-field" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">GENDER (OPTIONAL)</label>
+                        <label for="user-gender" class="item-subtitle">GENDER (OPTIONAL)</label>
                         <select id="user-gender" class="input-field">
                             <option value="">SELECT...</option>
                             <option value="MALE">MALE</option>
@@ -612,11 +621,11 @@ header {
                         </select>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">GEOLOCATION (COUNTRY)</label>
+                        <label for="user-country" class="item-subtitle">GEOLOCATION (COUNTRY)</label>
                         <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">BIOMETRIC PIC</label>
+                        <label for="user-pic" class="item-subtitle">BIOMETRIC PIC</label>
                         <input type="file" id="user-pic" class="input-field" accept="image/*">
                     </div>
                     <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
