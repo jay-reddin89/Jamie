@@ -688,6 +688,15 @@ header {
     box-shadow: 0 0 20px rgba(197, 225, 165, 0.3);
 }
 
+.notification-toast.error {
+    background: var(--md-sys-color-error);
+    box-shadow: 0 0 20px rgba(207, 102, 121, 0.3);
+}
+
+.text-error {
+    color: var(--md-sys-color-error);
+}
+
 .border-subtle {
     border-color: var(--border-color) !important;
 }
