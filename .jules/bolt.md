@@ -1,0 +1,3 @@
+## 2025-05-22 - [Optimizing High-Frequency Update Loops]
+**Learning:** `toLocaleString()` internally instantiates a new `Intl.NumberFormat` instance on every call, which is expensive in high-frequency loops (e.g., 1s intervals). Hoisting a single `Intl.NumberFormat` instance and calling `.format()` reduces execution time significantly. Furthermore, caching DOM element references and implementing "dirty checking" (only updating `textContent` if the value has changed) minimizes layout thrashing and main-thread blocking.
+**Action:** Always hoist formatters and cache DOM elements outside of `setInterval` or `requestAnimationFrame` loops. Implement dirty checking for DOM updates in these loops.
