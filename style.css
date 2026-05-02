@@ -725,3 +725,12 @@ header {
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
 }
+
+.text-error {
+    color: var(--md-sys-color-error);
+}
+
+.notification-toast.error {
+    background: var(--md-sys-color-error);
+    box-shadow: 0 0 20px rgba(207, 102, 121, 0.3);
+}

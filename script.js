@@ -54,7 +54,7 @@ function saveUserData() {
     state.user.country = document.getElementById('user-country').value;
     state.user.gender = document.getElementById('user-gender').value;
 
-    if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+    if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE', true);
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
@@ -90,8 +90,9 @@ async function handlePuterSignIn() {
     } catch (e) {}
 }
 
-function showNotification(msg) {
+function showNotification(msg, isError = false) {
     elements.notification.textContent = msg;
+    elements.notification.classList.toggle('error', isError);
     elements.notification.classList.remove('hidden');
     setTimeout(() => elements.notification.classList.add('hidden'), 3000);
 }
