@@ -207,21 +207,69 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
-function updateLiveCounters() {
-    if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
+// Hoisted formatters to avoid expensive re-instantiation in loops
+const liveFormatter = new Intl.NumberFormat('en-US');
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+// DOM Cache for live counters to avoid repeated lookups
+const counterDomCache = {
+    years: null,
+    months: null,
+    weeks: null,
+    days: null,
+    hours: null,
+    minutes: null,
+    seconds: null
+};
+
+/**
+ * Initializes DOM cache if not already done.
+ */
+function ensureCounterCache() {
+    if (!counterDomCache.years) {
+        counterDomCache.years = document.getElementById('counter-years');
+        counterDomCache.months = document.getElementById('counter-months');
+        counterDomCache.weeks = document.getElementById('counter-weeks');
+        counterDomCache.days = document.getElementById('counter-days');
+        counterDomCache.hours = document.getElementById('counter-hours');
+        counterDomCache.minutes = document.getElementById('counter-minutes');
+        counterDomCache.seconds = document.getElementById('counter-seconds');
+    }
 }
 
-function calculateAge(birthDate) {
+/**
+ * Synchronously updates a counter element with dirty checking.
+ */
+function updateCounterElement(el, value) {
+    if (el && el.textContent !== value) {
+        el.textContent = value;
+    }
+}
+
+/**
+ * Periodically updates the UI with live counters.
+ * Optimized with DOM caching and dirty checking.
+ */
+function updateLiveCounters() {
+    if (!userData.dob) return;
+
+    ensureCounterCache();
     const now = new Date();
+    const age = calculateAge(userData.dob, now);
+
+    updateCounterElement(counterDomCache.years, formatNumber(age.years));
+    updateCounterElement(counterDomCache.months, formatNumber(age.months));
+    updateCounterElement(counterDomCache.weeks, formatNumber(age.weeks));
+    updateCounterElement(counterDomCache.days, formatNumber(age.days));
+    updateCounterElement(counterDomCache.hours, formatNumber(age.hours));
+    updateCounterElement(counterDomCache.minutes, formatNumber(age.minutes));
+    updateCounterElement(counterDomCache.seconds, formatNumber(age.seconds));
+}
+
+/**
+ * Calculates age and elapsed time units from a birth date.
+ * Optimized to accept an optional 'now' timestamp.
+ */
+function calculateAge(birthDate, now = new Date()) {
     const diff = now - birthDate;
 
     const seconds = Math.floor(diff / 1000);
