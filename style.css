@@ -63,6 +63,11 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+*:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
 body {
     background-color: var(--md-sys-color-background);
     color: var(--md-sys-color-on-background);
@@ -580,7 +585,6 @@ header {
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s, transform 0.2s;
-    outline: none;
 }
 
 .settings-icon:hover {
@@ -724,4 +728,8 @@ header {
 
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
+}
+
+.text-error {
+    color: var(--md-sys-color-error);
 }
