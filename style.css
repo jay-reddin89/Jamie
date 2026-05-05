@@ -600,6 +600,10 @@ header {
     font-weight: 700;
 }
 
+.text-error {
+    color: var(--md-sys-color-error);
+}
+
 .form-field-wrapper {
     margin-bottom: 12px;
 }
