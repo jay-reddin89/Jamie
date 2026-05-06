@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    liveUpdateInterval: null
 };
 
 const elements = {
@@ -231,6 +232,7 @@ function renderResults() {
 
     document.getElementById('download-pdf-btn').addEventListener('click', generatePDF);
 
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
     startLiveUpdates();
 }
 
@@ -239,7 +241,7 @@ function renderResults() {
 function renderLiveStats() {
     const { container, content } = createCollapsibleSection('LIVE STATS', false);
     const dob = new Date(state.user.dob);
-    const totalDays = calculateAge(state.user.dob).years * 365;
+    const totalDays = calculateAge(dob).years * 365;
 
     const heroCard = document.createElement('div');
     heroCard.className = 'card';
@@ -261,7 +263,7 @@ function renderLiveStats() {
         { label: 'MINUTES ELAPSED', id: 'val-minutes', value: '-' },
         { label: 'Hair Grown', value: `~${(totalDays * 0.035).toFixed(1)}m`, subtitle: 'BIOMETRIC MILESTONE' },
         { label: 'Nails Grown', value: `~${(totalDays * 0.01).toFixed(1)}cm`, subtitle: 'BIOMETRIC MILESTONE' },
-        { label: 'Skin Shed', value: `~${(calculateAge(state.user.dob).years * 0.7).toFixed(1)}kg`, subtitle: 'BIOMETRIC MILESTONE' },
+        { label: 'Skin Shed', value: `~${(calculateAge(dob).years * 0.7).toFixed(1)}kg`, subtitle: 'BIOMETRIC MILESTONE' },
         { label: 'Total Blinks', id: 'est-blinks', value: '-', subtitle: 'BIOMETRIC MILESTONE' },
         { label: 'HEARTBEATS', id: 'est-heart', value: '-', subtitle: 'BIOMETRIC MILESTONE' },
         { label: 'BREATHS', id: 'est-breaths', value: '-', subtitle: 'BIOMETRIC MILESTONE' },
@@ -275,7 +277,7 @@ function renderLiveStats() {
 
 function renderNameFacts() {
     const { container, content } = createCollapsibleSection('NAME FACTS');
-    const age = calculateAge(state.user.dob).years;
+    const age = calculateAge(new Date(state.user.dob)).years;
     const country = state.user.country || 'Global';
 
     content.appendChild(createDataList([
@@ -350,7 +352,7 @@ function renderTopMedia() {
 
 function renderGlobalStanding() {
     const { container, content } = createCollapsibleSection('GLOBAL STANDING');
-    const age = calculateAge(state.user.dob).years;
+    const age = calculateAge(new Date(state.user.dob)).years;
     const percentile = Math.min(99, Math.max(1, age * 1.2)).toFixed(1);
 
     content.appendChild(createDataList([
@@ -363,8 +365,9 @@ function renderGlobalStanding() {
 
 function renderStarFacts() {
     const { container, content } = createCollapsibleSection('STAR FACTS');
-    const zodiac = getZodiac(new Date(state.user.dob));
-    const age = calculateAge(state.user.dob).years;
+    const dob = new Date(state.user.dob);
+    const zodiac = getZodiac(dob);
+    const age = calculateAge(dob).years;
     const card = document.createElement('div');
     card.className = 'card relative';
     card.innerHTML = `
@@ -385,7 +388,7 @@ function renderStarFacts() {
 
 function renderEarthFacts() {
     const { container, content } = createCollapsibleSection('EARTH FACTS');
-    const age = calculateAge(state.user.dob).years;
+    const age = calculateAge(new Date(state.user.dob)).years;
     const galacticDist = age * 4.5e9;
 
     content.appendChild(createDataList([
@@ -398,7 +401,7 @@ function renderEarthFacts() {
 
 function renderEconomyFacts() {
     const { container, content } = createCollapsibleSection('ECONOMY FACTS');
-    const age = calculateAge(state.user.dob).years;
+    const age = calculateAge(new Date(state.user.dob)).years;
     const inflationFactor = Math.pow(1.03, age).toFixed(2);
 
     content.appendChild(createDataList([
@@ -435,7 +438,7 @@ function renderTechFacts() {
 
 function renderNetworkFacts() {
     const { container, content } = createCollapsibleSection('NETWORK FACTS');
-    const days = calculateAge(state.user.dob).years * 365;
+    const days = calculateAge(new Date(state.user.dob)).years * 365;
 
     content.appendChild(createDataList([
         { label: 'Estimated Emails Sent', value: `~${formatLarge(days * 20)}` },
@@ -448,7 +451,7 @@ function renderNetworkFacts() {
 
 function renderEcoFacts() {
     const { container, content } = createCollapsibleSection('ECO FACTS');
-    const age = calculateAge(state.user.dob).years;
+    const age = calculateAge(new Date(state.user.dob)).years;
 
     content.appendChild(createDataList([
         { label: 'Carbon Footprint', value: `~${(age * 4.8).toFixed(1)} Tonnes CO2` },
@@ -461,7 +464,7 @@ function renderEcoFacts() {
 
 function renderPowerFacts() {
     const { container, content } = createCollapsibleSection('POWER FACTS');
-    const days = calculateAge(state.user.dob).years * 365;
+    const days = calculateAge(new Date(state.user.dob)).years * 365;
 
     content.appendChild(createDataList([
         { label: 'Total Energy Expended', value: `~${(days * 8.4).toLocaleString()} MJ` },
@@ -474,7 +477,7 @@ function renderPowerFacts() {
 
 function renderKnowledgeFacts() {
     const { container, content } = createCollapsibleSection('KNOWLEDGE FACTS');
-    const days = calculateAge(state.user.dob).years * 365;
+    const days = calculateAge(new Date(state.user.dob)).years * 365;
 
     content.appendChild(createDataList([
         { label: 'Words Read (EST)', value: `~${formatLarge(days * 10000)}` },
@@ -581,8 +584,12 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Calculates years, minutes, and seconds from a DOB.
+ * Optimized to accept pre-calculated dates and differences.
+ */
+function calculateAge(dob, now = new Date()) {
+    const diff = now - dob;
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -590,37 +597,67 @@ function calculateAge(dobStr) {
     };
 }
 
+const liveFormatter = new Intl.NumberFormat();
+
+/**
+ * Optimized high-frequency update loop.
+ * Implements lazy DOM caching and dirty checking to minimize main-thread overhead.
+ */
 function startLiveUpdates() {
-    setInterval(() => {
+    const dob = new Date(state.user.dob);
+    const bornDayName = dob.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+
+    // Scoped cache to prevent stale references after re-render
+    const liveUpdateCache = {};
+
+    state.liveUpdateInterval = setInterval(() => {
         if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        const now = new Date();
+        const diff = now - dob;
+        const age = calculateAge(dob, now);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+        /**
+         * Helper to update DOM elements with lazy caching.
+         * Reduces getElementById calls which are expensive in high-frequency loops.
+         */
+        const update = (id, val) => {
+            if (!liveUpdateCache[id]) {
+                liveUpdateCache[id] = document.getElementById(id);
+            }
+            const el = liveUpdateCache[id];
+            if (el && el.textContent !== val) el.textContent = val;
+        };
+
+        const totalSeconds = Math.floor(diff / 1000);
+        const days = diff / 86400000;
+        const mins = diff / 60000;
+
+        update('val-seconds', liveFormatter.format(totalSeconds));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', liveFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', liveFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', liveFormatter.format(Math.floor(days)));
+        update('val-hours', liveFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', liveFormatter.format(age.minutes));
+        update('val-born-day', bornDayName);
 
-        const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        update('est-blinks', formatLarge(days * 14400)); // 15 * 60 * 16 = 14400
     }, 1000);
 }
 
+/**
+ * Formats large numbers into human-readable strings (e.g., 1.2B, 3.4M, 5.6k).
+ * Uses the hoisted liveFormatter for the base case to improve performance.
+ */
 function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return liveFormatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
