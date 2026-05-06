@@ -342,9 +342,13 @@ header {
 }
 
 .input-field:focus {
-    outline: none;
     border-color: var(--md-sys-color-primary);
     box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+}
+
+*:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
 }
 
 .input-field::placeholder {
@@ -580,7 +584,6 @@ header {
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s, transform 0.2s;
-    outline: none;
 }
 
 .settings-icon:hover {
@@ -724,4 +727,9 @@ header {
 
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
+}
+
+.text-error {
+    color: var(--md-sys-color-error);
+    font-weight: var(--md-font-weight-bold);
 }

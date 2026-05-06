@@ -346,6 +346,16 @@ header {
     font-family: var(--font-mono);
 }
 
+*:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
+.text-error {
+    color: #cf6679;
+    font-weight: 700;
+}
+
 .btn-primary {
     background: var(--accent-cyan);
     color: #000;
@@ -586,7 +596,7 @@ header {
                 <div class="logo-v3">LIFE.STATS_V3</div>
                 <div class="sys-id">SYS.ID: 9X-441 // ONLINE</div>
             </div>
-            <div id="settings-btn" style="cursor: pointer; font-size: 1.2rem;">⋮</div>
+            <button id="settings-btn" aria-label="Settings" title="Settings" style="cursor: pointer; font-size: 1.2rem; background: transparent; border: none; color: var(--text-primary); padding: 4px;">⋮</button>
         </header>
 
         <main id="main-content">
@@ -595,15 +605,15 @@ header {
                 <div class="card" style="margin: 0;">
                     <h3 style="margin-bottom: 16px; font-size: 0.8rem; color: var(--accent-cyan);">AUTHENTICATION REQUIRED</h3>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">SUBJECT NAME</label>
-                        <input type="text" id="user-name" class="input-field" placeholder="ENTER IDENTIFIER">
+                        <label for="user-name" class="item-subtitle">SUBJECT NAME <span class="text-error">*</span></label>
+                        <input type="text" id="user-name" class="input-field" placeholder="ENTER IDENTIFIER" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">BIRTH SEQUENCE (DOB)</label>
-                        <input type="date" id="user-dob" class="input-field">
+                        <label for="user-dob" class="item-subtitle">BIRTH SEQUENCE (DOB) <span class="text-error">*</span></label>
+                        <input type="date" id="user-dob" class="input-field" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">GENDER (OPTIONAL)</label>
+                        <label for="user-gender" class="item-subtitle">GENDER (OPTIONAL)</label>
                         <select id="user-gender" class="input-field">
                             <option value="">SELECT...</option>
                             <option value="MALE">MALE</option>
@@ -612,11 +622,11 @@ header {
                         </select>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">GEOLOCATION (COUNTRY)</label>
+                        <label for="user-country" class="item-subtitle">GEOLOCATION (COUNTRY)</label>
                         <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label class="item-subtitle">BIOMETRIC PIC</label>
+                        <label for="user-pic" class="item-subtitle">BIOMETRIC PIC</label>
                         <input type="file" id="user-pic" class="input-field" accept="image/*">
                     </div>
                     <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
@@ -673,7 +683,7 @@ header {
             </div>
         </div>
 
-        <div id="notification" class="hidden" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent-green); color: #000; border: 2px solid #fff; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; z-index: 2000;"></div>
+        <div id="notification" class="hidden" role="status" aria-live="polite" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent-green); color: #000; border: 2px solid #fff; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; z-index: 2000;"></div>
     </div>
     <script>
 const state = {
