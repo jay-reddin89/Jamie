@@ -1,0 +1,3 @@
+## 2025-05-15 - Global Focus Visibility and Form Accessibility
+**Learning:** Explicit `outline: none` on interactive elements like inputs and buttons is a significant accessibility barrier that prevents keyboard users from knowing their focus location. Global `:focus-visible` styles on the universal selector `*` ensure that all interactive elements have a high-contrast indicator without affecting mouse users.
+**Action:** Always remove explicit `outline: none` on `:focus` states and implement a global `:focus-visible` strategy with `outline-offset` to ensure visibility across varied backgrounds.

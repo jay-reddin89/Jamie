@@ -63,6 +63,11 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+*:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary) !important;
+    outline-offset: 2px !important;
+}
+
 body {
     background-color: var(--md-sys-color-background);
     color: var(--md-sys-color-on-background);
@@ -342,7 +347,6 @@ header {
 }
 
 .input-field:focus {
-    outline: none;
     border-color: var(--md-sys-color-primary);
     box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
 }
@@ -580,7 +584,6 @@ header {
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s, transform 0.2s;
-    outline: none;
 }
 
 .settings-icon:hover {
@@ -598,6 +601,10 @@ header {
     font-size: 0.8rem;
     color: var(--accent-cyan);
     font-weight: 700;
+}
+
+.text-error {
+    color: var(--md-sys-color-error);
 }
 
 .form-field-wrapper {
