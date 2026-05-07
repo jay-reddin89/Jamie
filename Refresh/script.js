@@ -207,22 +207,51 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
+// Lazy DOM cache for high-frequency updates
+const liveUpdateCache = {};
+const liveFormatter = new Intl.NumberFormat('en-US');
+
+/**
+ * Optimised high-frequency update loop for live counters.
+ * Features: Synchronized dirty checking and lazy DOM caching.
+ */
+const updateLiveCounterElement = (id, val) => {
+    if (!liveUpdateCache[id]) {
+        liveUpdateCache[id] = document.getElementById(id);
+    }
+    const el = liveUpdateCache[id];
+    if (el && el.textContent !== val) {
+        el.textContent = val;
+    }
+};
+
+/**
+ * Optimised high-frequency update loop for live counters.
+ * Features: Synchronized dirty checking and lazy DOM caching.
+ */
 function updateLiveCounters() {
     if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
+    const diff = Date.now() - userData.dob.getTime();
+    const age = calculateAge(null, diff);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    updateLiveCounterElement('counter-years', liveFormatter.format(age.years));
+    updateLiveCounterElement('counter-months', liveFormatter.format(age.months));
+    updateLiveCounterElement('counter-weeks', liveFormatter.format(age.weeks));
+    updateLiveCounterElement('counter-days', liveFormatter.format(age.days));
+    updateLiveCounterElement('counter-hours', liveFormatter.format(age.hours));
+    updateLiveCounterElement('counter-minutes', liveFormatter.format(age.minutes));
+    updateLiveCounterElement('counter-seconds', liveFormatter.format(age.seconds));
+
+    // Also update lifetime stats synchronously to ensure data consistency
+    updateLifetimeStats(diff);
 }
 
-function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+/**
+ * Calculates age components from a DOB or pre-calculated difference.
+ * Optimization: Accept pre-calculated diff to avoid redundant Date allocations.
+ */
+function calculateAge(birthDate, precalculatedDiff = null) {
+    const diff = precalculatedDiff !== null ? precalculatedDiff : (new Date() - birthDate);
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -238,17 +267,20 @@ function calculateAge(birthDate) {
 // ==========================================
 // LIFETIME STATISTICS
 // ==========================================
-function updateLifetimeStats() {
+/**
+ * Updates lifetime statistics with optimized DOM operations.
+ */
+function updateLifetimeStats(precalculatedDiff = null) {
     if (!userData.dob) return;
-    const diff = new Date() - userData.dob;
+    const diff = precalculatedDiff !== null ? precalculatedDiff : (Date.now() - userData.dob.getTime());
     const mins = diff / 60000;
     const days = diff / 86400000;
 
-    document.getElementById('stat-heartbeats').textContent = formatLargeNumber(Math.floor(mins * 72));
-    document.getElementById('stat-breaths').textContent = formatLargeNumber(Math.floor(mins * 14));
-    document.getElementById('stat-sleep').textContent = formatLargeNumber(Math.floor(days * 8));
-    document.getElementById('stat-meals').textContent = formatLargeNumber(Math.floor(days * 1.5));
-    document.getElementById('stat-blinks').textContent = formatLargeNumber(Math.floor(days * 15 * 60 * 16));
+    updateLiveCounterElement('stat-heartbeats', formatLargeNumber(Math.floor(mins * 72)));
+    updateLiveCounterElement('stat-breaths', formatLargeNumber(Math.floor(mins * 14)));
+    updateLiveCounterElement('stat-sleep', formatLargeNumber(Math.floor(days * 8)));
+    updateLiveCounterElement('stat-meals', formatLargeNumber(Math.floor(days * 1.5)));
+    updateLiveCounterElement('stat-blinks', formatLargeNumber(Math.floor(days * 15 * 60 * 16)));
 }
 
 // ==========================================
