@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    liveUpdateInterval: null
 };
 
 const elements = {
@@ -581,45 +582,76 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Optimized age calculation that avoids redundant Date object allocations.
+ * @param {Date|string} dob - Date of birth object or string.
+ * @returns {Object} Age statistics.
+ */
+function calculateAge(dob) {
+    const dobDate = dob instanceof Date ? dob : new Date(dob);
+    const diff = Date.now() - dobDate;
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
-        seconds: Math.floor(diff / 1000)
+        seconds: Math.floor(diff / 1000),
+        diff
     };
 }
 
+/**
+ * High-performance live update loop.
+ * Features: Lazy DOM caching, hoisted formatters, pre-calculated constants, and dirty checking.
+ */
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
+    if (!state.user.dob) return;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    const dobDate = new Date(state.user.dob);
+    const liveFormatter = new Intl.NumberFormat();
+    const dayBorn = dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+    const liveUpdateCache = {};
+
+    state.liveUpdateInterval = setInterval(() => {
+        const stats = calculateAge(dobDate);
+        const diff = stats.diff;
+
+        const update = (id, val) => {
+            if (!liveUpdateCache[id]) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                liveUpdateCache[id] = el;
+            }
+            const stringVal = val.toString();
+            if (liveUpdateCache[id].textContent !== stringVal) {
+                liveUpdateCache[id].textContent = stringVal;
+            }
+        };
+
+        update('val-seconds', liveFormatter.format(stats.seconds));
+        update('val-years', stats.years);
+        update('val-months', liveFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', liveFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', liveFormatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', liveFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', liveFormatter.format(stats.minutes));
+        update('val-born-day', dayBorn);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 
+const largeFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
+const largeFormatterB = new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 function formatLarge(num) {
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
+    if (num >= 1e9) return largeFormatterB.format(num / 1e9) + 'B';
+    if (num >= 1e6) return largeFormatter.format(num / 1e6) + 'M';
+    if (num >= 1e3) return largeFormatter.format(num / 1e3) + 'k';
     return Math.floor(num).toLocaleString();
 }
 

@@ -207,22 +207,45 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
+const liveUpdateCache = {};
+const liveFormatter = new Intl.NumberFormat();
+
+/**
+ * Synchronized live counter updates with lazy DOM caching and dirty checking.
+ */
 function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    const update = (id, val) => {
+        if (!liveUpdateCache[id]) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            liveUpdateCache[id] = el;
+        }
+        const stringVal = val.toString();
+        if (liveUpdateCache[id].textContent !== stringVal) {
+            liveUpdateCache[id].textContent = stringVal;
+        }
+    };
+
+    update('counter-years', liveFormatter.format(age.years));
+    update('counter-months', liveFormatter.format(age.months));
+    update('counter-weeks', liveFormatter.format(age.weeks));
+    update('counter-days', liveFormatter.format(age.days));
+    update('counter-hours', liveFormatter.format(age.hours));
+    update('counter-minutes', liveFormatter.format(age.minutes));
+    update('counter-seconds', liveFormatter.format(age.seconds));
 }
 
+/**
+ * Optimized age calculation that avoids redundant Date object allocations.
+ * @param {Date|string} birthDate - Date of birth object or string.
+ * @returns {Object} Age statistics.
+ */
 function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+    const dobDate = birthDate instanceof Date ? birthDate : new Date(birthDate);
+    const diff = Date.now() - dobDate;
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -444,15 +467,18 @@ function clearUserData() {
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
+const largeFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
+const largeFormatterB = new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    return liveFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toLocaleString('en-US');
+    if (num >= 1e9) return largeFormatterB.format(num / 1e9) + 'B';
+    if (num >= 1e6) return largeFormatter.format(num / 1e6) + 'M';
+    if (num >= 1e3) return largeFormatter.format(num / 1e3) + 'K';
+    return liveFormatter.format(num);
 }
 
 // ==========================================
