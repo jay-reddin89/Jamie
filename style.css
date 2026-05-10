@@ -725,3 +725,7 @@ header {
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
 }
+
+.text-error {
+    color: var(--md-sys-color-error) !important;
+}
