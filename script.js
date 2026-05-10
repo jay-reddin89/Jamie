@@ -32,6 +32,20 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    // Keyboard Accessibility
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.settingsModal.classList.contains('hidden')) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
+
+    // Click Outside to Close
+    elements.settingsModal.addEventListener('click', (e) => {
+        if (e.target === elements.settingsModal) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
 }
 
 function loadUserData() {
@@ -79,6 +93,11 @@ function applySettings() {
     localStorage.setItem('jr_life_facts_settings', JSON.stringify(state.settings));
     toggleModal(elements.settingsModal, false);
     showNotification('SYSTEM UPDATED');
+
+    // Refresh UI if on results screen to show/hide sections immediately
+    if (!elements.resultsSection.classList.contains('hidden')) {
+        renderResults();
+    }
 }
 
 async function handlePuterSignIn() {
