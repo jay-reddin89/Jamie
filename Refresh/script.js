@@ -201,16 +201,82 @@ function populateDashboard() {
 // ==========================================
 // LIVE COUNTERS
 // ==========================================
+/**
+ * Optimized high-frequency update loop for Modern UI.
+ * Consolidates live counters and lifetime stats to reduce redundant calculations.
+ */
 function startLiveCounters() {
-    updateLiveCounters();
+    if (!userData.dob) return;
+
+    const dobTime = userData.dob.getTime();
+    const numberFormatter = new Intl.NumberFormat('en-US');
+    const elementCache = {};
+
+    const update = (id, val) => {
+        if (!elementCache[id]) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            elementCache[id] = el;
+        }
+        const stringVal = val.toString();
+        if (elementCache[id].textContent !== stringVal) {
+            elementCache[id].textContent = stringVal;
+        }
+    };
+
+    const tick = () => {
+        updateLiveCounters();
+        updateLifetimeStats();
+    };
+
+    tick();
     if (updateInterval) clearInterval(updateInterval);
-    updateInterval = setInterval(updateLiveCounters, 1000);
+    updateInterval = setInterval(tick, 1000);
+
+    // Internal helpers using closure for caching
+    function updateLiveCounters() {
+        if (!userData.dob) return;
+        const now = Date.now();
+        const diff = now - dobTime;
+
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        const weeks = Math.floor(days / 7);
+        const months = Math.floor(days / 30.44);
+        const years = Math.floor(days / 365.25);
+
+        update('counter-years', numberFormatter.format(years));
+        update('counter-months', numberFormatter.format(months));
+        update('counter-weeks', numberFormatter.format(weeks));
+        update('counter-days', numberFormatter.format(days));
+        update('counter-hours', numberFormatter.format(hours));
+        update('counter-minutes', numberFormatter.format(minutes));
+        update('counter-seconds', numberFormatter.format(seconds));
+    }
+
+    function updateLifetimeStats() {
+        if (!userData.dob) return;
+        const diff = Date.now() - dobTime;
+        const daysFloat = diff / 86400000;
+        const minsFloat = diff / 60000;
+
+        update('stat-heartbeats', formatLargeNumber(Math.floor(minsFloat * 72)));
+        update('stat-breaths', formatLargeNumber(Math.floor(minsFloat * 14)));
+        update('stat-sleep', formatLargeNumber(Math.floor(daysFloat * 8)));
+        update('stat-meals', formatLargeNumber(Math.floor(daysFloat * 1.5)));
+        update('stat-blinks', formatLargeNumber(Math.floor(daysFloat * 15 * 60 * 16)));
+    }
+
+    // Expose for compatibility if needed, though they now use the local closure state
+    window.updateLiveCounters = updateLiveCounters;
+    window.updateLifetimeStats = updateLifetimeStats;
 }
 
 function updateLiveCounters() {
-    if (!userData.dob) return;
+    // This is the global version, which will be overwritten by startLiveCounters for performance
     const age = calculateAge(userData.dob);
-
     document.getElementById('counter-years').textContent = formatNumber(age.years);
     document.getElementById('counter-months').textContent = formatNumber(age.months);
     document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
@@ -221,18 +287,19 @@ function updateLiveCounters() {
 }
 
 function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+    if (!birthDate) return { years:0, months:0, weeks:0, days:0, hours:0, minutes:0, seconds:0 };
+    const diff = Date.now() - birthDate.getTime();
+    const days = Math.floor(diff / 86400000);
 
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30.44);
-    const years = Math.floor(days / 365.25);
-
-    return { years, months, weeks, days, hours, minutes, seconds };
+    return {
+        years: Math.floor(days / 365.25),
+        months: Math.floor(days / 30.44),
+        weeks: Math.floor(days / 7),
+        days,
+        hours: Math.floor(diff / 3600000),
+        minutes: Math.floor(diff / 60000),
+        seconds: Math.floor(diff / 1000)
+    };
 }
 
 // ==========================================
@@ -240,7 +307,7 @@ function calculateAge(birthDate) {
 // ==========================================
 function updateLifetimeStats() {
     if (!userData.dob) return;
-    const diff = new Date() - userData.dob;
+    const diff = Date.now() - userData.dob.getTime();
     const mins = diff / 60000;
     const days = diff / 86400000;
 
