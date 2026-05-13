@@ -16,7 +16,8 @@ const elements = {
     settingsBtn: document.getElementById('settings-btn'),
     puterSigninBtn: document.getElementById('puter-signin-btn'),
     progressBar: document.getElementById('progress-bar'),
-    notification: document.getElementById('notification')
+    notification: document.getElementById('notification'),
+    userPicPreview: document.getElementById('user-pic-preview')
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,6 +45,10 @@ function loadUserData() {
         if (document.getElementById('user-gender')) {
             document.getElementById('user-gender').value = state.user.gender;
         }
+        if (state.user.profilePic && elements.userPicPreview) {
+            elements.userPicPreview.innerHTML = `<img src="${state.user.profilePic}" class="avatar-img" alt="Profile preview">`;
+            elements.userPicPreview.classList.remove('hidden');
+        }
         elements.generateBtn.classList.remove('hidden');
     }
 }
@@ -65,7 +70,13 @@ function handlePicUpload(e) {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (event) => state.user.profilePic = event.target.result;
+        reader.onload = (event) => {
+            state.user.profilePic = event.target.result;
+            if (elements.userPicPreview) {
+                elements.userPicPreview.innerHTML = `<img src="${event.target.result}" class="avatar-img" alt="Profile preview">`;
+                elements.userPicPreview.classList.remove('hidden');
+            }
+        };
         reader.readAsDataURL(file);
     }
 }
