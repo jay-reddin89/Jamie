@@ -44,6 +44,15 @@ function loadUserData() {
         if (document.getElementById('user-gender')) {
             document.getElementById('user-gender').value = state.user.gender;
         }
+
+        if (state.user.profilePic) {
+            const preview = document.getElementById('user-pic-preview');
+            if (preview) {
+                preview.innerHTML = `<img src="${state.user.profilePic}" class="avatar-img" alt="Profile Preview">`;
+                preview.classList.remove('hidden');
+            }
+        }
+
         elements.generateBtn.classList.remove('hidden');
     }
 }
@@ -65,7 +74,14 @@ function handlePicUpload(e) {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (event) => state.user.profilePic = event.target.result;
+        reader.onload = (event) => {
+            state.user.profilePic = event.target.result;
+            const preview = document.getElementById('user-pic-preview');
+            if (preview) {
+                preview.innerHTML = `<img src="${state.user.profilePic}" class="avatar-img" alt="Profile Preview">`;
+                preview.classList.remove('hidden');
+            }
+        };
         reader.readAsDataURL(file);
     }
 }
@@ -189,7 +205,7 @@ function renderResults() {
     const profile = document.createElement('div');
     profile.className = 'card profile-card';
     profile.innerHTML = `
-        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img">` : '🧬'}</div>
+        <div class="avatar-hex">${state.user.profilePic ? `<img src="${state.user.profilePic}" class="avatar-img" alt="Profile Picture">` : '🧬'}</div>
         <div class="profile-details">
             <div class="sub-label">SUBJECT</div>
             <h2>${state.user.name.toUpperCase() || 'ANONYMOUS'}</h2>
