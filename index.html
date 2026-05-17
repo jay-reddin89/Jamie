@@ -29,17 +29,17 @@
             <!-- 1. Input Screen -->
             <section id="input-section" class="input-screen">
                 <div class="card">
-                    <h3 class="auth-header"></h3>
+                    <h3 class="auth-header">AUTHENTICATION REQUIRED</h3>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Persons Name</label>
+                        <label class="item-subtitle" for="user-name">Person's Name</label>
                         <input type="text" id="user-name" class="input-field" placeholder="Name">
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Date Of Birth</label>
+                        <label class="item-subtitle" for="user-dob">Date Of Birth</label>
                         <input type="date" id="user-dob" class="input-field">
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Gender  (OPTIONAL)</label>
+                        <label class="item-subtitle" for="user-gender">Gender  (OPTIONAL)</label>
                         <select id="user-gender" class="input-field">
                             <option value="">SELECT...</option>
                             <option value="MALE">MALE</option>
@@ -48,12 +48,13 @@
                         </select>
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Country (OPTIONAL)</label>
+                        <label class="item-subtitle" for="user-country">Country (OPTIONAL)</label>
                         <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
                     </div>
                     <div class="form-field-wrapper">
-                        <label class="item-subtitle">Selfie Pic</label>
+                        <label class="item-subtitle" for="user-pic">Selfie Pic</label>
                         <input type="file" id="user-pic" class="input-field" accept="image/*">
+                        <div id="user-pic-preview" class="avatar-hex margin-top-md hidden"></div>
                     </div>
                     <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
                     <button id="generate-btn" class="btn-primary btn-scan hidden">EXECUTE SCAN</button>
@@ -111,6 +112,6 @@
 
         <div id="notification" class="hidden notification-toast"></div>
     </div>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
