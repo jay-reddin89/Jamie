@@ -581,8 +581,12 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Optimized age calculation using milliseconds to avoid redundant Date object creation
+ * @param {number} diff - Difference in milliseconds
+ * @returns {Object} Age components
+ */
+function calculateAgeFromMs(diff) {
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -590,37 +594,70 @@ function calculateAge(dobStr) {
     };
 }
 
-function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+function calculateAge(dobStr) {
+    return calculateAgeFromMs(Date.now() - new Date(dobStr).getTime());
+}
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+// Global cached interval ID to prevent leaks
+let liveUpdateInterval = null;
+// Global cached NumberFormat for performance
+const numberFormatter = new Intl.NumberFormat();
+
+function startLiveUpdates() {
+    if (liveUpdateInterval) clearInterval(liveUpdateInterval);
+    if (!state.user.dob) return;
+
+    const birthTimestamp = new Date(state.user.dob).getTime();
+    const birthDayName = new Date(state.user.dob).toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase();
+
+    // Cache for dirty checking
+    const lastValues = {};
+    const elementsCache = {};
+
+    const update = (id, val) => {
+        if (!(id in elementsCache)) {
+            elementsCache[id] = document.getElementById(id);
+        }
+        const el = elementsCache[id];
+        if (el && lastValues[id] !== val) {
+            el.textContent = val;
+            lastValues[id] = val;
+        }
+    };
+
+    liveUpdateInterval = setInterval(() => {
+        const now = Date.now();
+        const diff = now - birthTimestamp;
+        const age = calculateAgeFromMs(diff);
+
+        update('val-seconds', numberFormatter.format(Math.floor(diff / 1000)));
+        update('val-years', age.years.toString());
+        update('val-months', numberFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numberFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', numberFormatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', numberFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numberFormatter.format(age.minutes));
+        update('val-born-day', birthDayName);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 
+/**
+ * Optimized large number formatter using pre-instantiated NumberFormat
+ * @param {number} num - Number to format
+ * @returns {string} Formatted string
+ */
 function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return numberFormatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
