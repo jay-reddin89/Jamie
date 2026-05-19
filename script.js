@@ -21,13 +21,20 @@ const elements = {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
+    loadSettings();
     setupEventListeners();
 });
 
 function setupEventListeners() {
     elements.saveUserBtn.addEventListener('click', saveUserData);
     elements.generateBtn.addEventListener('click', startGeneration);
-    elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal, true));
+    elements.settingsBtn.addEventListener('click', () => {
+        // Sync checkboxes with current state before showing
+        document.querySelectorAll('.section-toggle').forEach(cb => {
+            cb.checked = state.settings.sections.includes(cb.dataset.section);
+        });
+        toggleModal(elements.settingsModal, true);
+    });
     document.getElementById('settings-cancel-btn').addEventListener('click', () => toggleModal(elements.settingsModal, false));
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
@@ -88,11 +95,23 @@ function toggleModal(modal, show) {
     modal.classList.toggle('hidden', !show);
 }
 
+function loadSettings() {
+    const savedSettings = localStorage.getItem('jr_life_facts_settings');
+    if (savedSettings) {
+        state.settings = JSON.parse(savedSettings);
+    }
+}
+
 function applySettings() {
     state.settings.sections = Array.from(document.querySelectorAll('.section-toggle:checked')).map(cb => cb.dataset.section);
     localStorage.setItem('jr_life_facts_settings', JSON.stringify(state.settings));
     toggleModal(elements.settingsModal, false);
     showNotification('SYSTEM UPDATED');
+
+    // Immediate feedback if results are visible
+    if (!elements.resultsSection.classList.contains('hidden')) {
+        renderResults();
+    }
 }
 
 async function handlePuterSignIn() {
