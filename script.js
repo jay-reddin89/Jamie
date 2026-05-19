@@ -44,6 +44,14 @@ function loadUserData() {
         if (document.getElementById('user-gender')) {
             document.getElementById('user-gender').value = state.user.gender;
         }
+
+        if (state.user.profilePic) {
+            const preview = document.getElementById('user-pic-preview');
+            if (preview) {
+                preview.innerHTML = `<img src="${state.user.profilePic}" class="avatar-img">`;
+            }
+        }
+
         elements.generateBtn.classList.remove('hidden');
     }
 }
@@ -65,7 +73,13 @@ function handlePicUpload(e) {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (event) => state.user.profilePic = event.target.result;
+        reader.onload = (event) => {
+            state.user.profilePic = event.target.result;
+            const preview = document.getElementById('user-pic-preview');
+            if (preview) {
+                preview.innerHTML = `<img src="${event.target.result}" class="avatar-img">`;
+            }
+        };
         reader.readAsDataURL(file);
     }
 }
