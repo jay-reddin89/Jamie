@@ -738,3 +738,35 @@ header {
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
 }
+
+/* Accessible Collapsible Headers */
+button.section-label,
+button.sub-label {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+button.section-label {
+    border-left: 3px solid var(--md-sys-color-primary);
+    padding-left: 10px;
+    background: linear-gradient(90deg, rgba(13, 71, 161, 0.05), transparent);
+}
+
+button.sub-label:hover .sub-toggle-arrow,
+button.section-label:hover .toggle-arrow {
+    color: var(--accent-amber);
+    transform: scale(1.1);
+}
+
+.toggle-arrow, .sub-toggle-arrow {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
