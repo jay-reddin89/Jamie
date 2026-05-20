@@ -1,0 +1,3 @@
+## 2026-02-18 - Optimized High-Frequency UI Updates
+**Learning:** High-frequency (1s) DOM updates can be significantly optimized by implementing a closure-based caching layer for DOM elements and using 'dirty checking' to skip `textContent` assignments when the value hasn't changed. Redundant `Intl.NumberFormat` and `Date` instantiations inside the loop are major bottlenecks.
+**Action:** Always hoist formatting objects and invariant calculations outside the interval loop. Use a local `cache` object within the interval initiation function to store element references and prevent repetitive `document.getElementById` calls.
