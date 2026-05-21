@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    updateInterval: null
 };
 
 const elements = {
@@ -604,28 +605,48 @@ function calculateAge(dobStr) {
     };
 }
 
-function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+// Hoisted formatters for performance
+const numFmt = new Intl.NumberFormat('en-US');
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+function startLiveUpdates() {
+    if (state.updateInterval) clearInterval(state.updateInterval);
+    const dobMs = new Date(state.user.dob).getTime();
+    const cache = {};
+
+    // Calculate constant birth day once
+    const dayFmt = new Intl.DateTimeFormat('en-US', { weekday: 'long' });
+    const bornDay = dayFmt.format(dobMs).toUpperCase();
+
+    state.updateInterval = setInterval(() => {
+        if (!state.user.dob) return;
+        const now = Date.now();
+        const diff = now - dobMs;
+        const years = Math.floor(diff / 31557600000);
+        const minutes = Math.floor(diff / 60000);
+
+        const update = (id, val) => {
+            if (!(id in cache)) cache[id] = document.getElementById(id);
+            const el = cache[id];
+            if (el) {
+                const newVal = val.toString();
+                if (el.textContent !== newVal) el.textContent = newVal;
+            }
+        };
+
+        update('val-seconds', numFmt.format(Math.floor(diff / 1000)));
+        update('val-years', years);
+        update('val-months', numFmt.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numFmt.format(Math.floor(diff / 604800000)));
+        update('val-days', numFmt.format(Math.floor(diff / 86400000)));
+        update('val-hours', numFmt.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numFmt.format(minutes));
+        update('val-born-day', bornDay);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
@@ -634,7 +655,7 @@ function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return numFmt.format(Math.floor(num));
 }
 
 function getZodiac(date) {
