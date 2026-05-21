@@ -132,12 +132,23 @@ header {
 }
 
 .section-label {
+    background: none;
+    border: none;
+    padding: 0;
+    width: calc(100% - 32px);
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
     font-size: 0.85rem;
     color: var(--md-sys-color-primary);
     letter-spacing: 0.5px;
     margin: 24px 16px 8px;
     font-weight: var(--md-font-weight-semibold);
     text-transform: uppercase;
+}
+
+.section-label:hover {
+    background: linear-gradient(90deg, rgba(187, 134, 252, 0.1), transparent);
 }
 
 /* Profile Card */
@@ -172,6 +183,24 @@ header {
     color: var(--md-sys-color-on-surface-variant);
     text-transform: uppercase;
     font-weight: var(--md-font-weight-medium);
+}
+
+button.sub-label {
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--accent-amber);
+    text-transform: uppercase;
+    font-weight: var(--md-font-weight-medium);
+}
+
+button.sub-label:hover {
+    opacity: 0.8;
 }
 
 .location-label {

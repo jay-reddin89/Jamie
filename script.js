@@ -6,6 +6,9 @@ const state = {
     isPuterSignedIn: false
 };
 
+let collapsibleCounter = 0;
+let liveInterval = null;
+
 const elements = {
     inputSection: document.getElementById('input-section'),
     loadingSection: document.getElementById('loading-section'),
@@ -93,6 +96,9 @@ function applySettings() {
     localStorage.setItem('jr_life_facts_settings', JSON.stringify(state.settings));
     toggleModal(elements.settingsModal, false);
     showNotification('SYSTEM UPDATED');
+    if (!elements.resultsSection.classList.contains('hidden')) {
+        renderResults();
+    }
 }
 
 async function handlePuterSignIn() {
@@ -152,18 +158,23 @@ function createDataList(items) {
 function createCollapsibleSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.className = 'collapsible-section';
+    const contentId = `collapsible-content-${collapsibleCounter++}`;
 
-    const header = document.createElement('div');
-    header.className = 'section-label flex-row align-center pointer justify-between';
-    header.style.margin = '24px 16px 8px'; // Keeping some margins that were original
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'section-label flex-row align-center justify-between';
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', contentId);
     header.innerHTML = `<span>${label}</span> <span class="toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = contentId;
     content.className = 'section-content' + (isCollapsed ? ' hidden' : '');
 
     header.addEventListener('click', () => {
-        const hidden = content.classList.toggle('hidden');
-        header.querySelector('.toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        const isHidden = content.classList.toggle('hidden');
+        header.setAttribute('aria-expanded', !isHidden);
+        header.querySelector('.toggle-arrow').textContent = isHidden ? '[+]' : '[-]';
     });
 
     container.appendChild(header);
@@ -174,18 +185,23 @@ function createCollapsibleSection(label, isCollapsed = true) {
 function createCollapsibleSubSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.className = 'form-field-wrapper';
+    const contentId = `collapsible-sub-content-${collapsibleCounter++}`;
 
-    const header = document.createElement('div');
-    header.className = 'sub-label pointer flex-row justify-between';
-    header.style.color = 'var(--accent-amber)';
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'sub-label flex-row justify-between';
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', contentId);
     header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = contentId;
     content.className = isCollapsed ? 'hidden' : '';
 
     header.addEventListener('click', () => {
-        const hidden = content.classList.toggle('hidden');
-        header.querySelector('.sub-toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        const isHidden = content.classList.toggle('hidden');
+        header.setAttribute('aria-expanded', !isHidden);
+        header.querySelector('.sub-toggle-arrow').textContent = isHidden ? '[+]' : '[-]';
     });
 
     container.appendChild(header);
@@ -605,7 +621,8 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
+    if (liveInterval) clearInterval(liveInterval);
+    liveInterval = setInterval(() => {
         if (!state.user.dob) return;
         const diff = new Date() - new Date(state.user.dob);
         const age = calculateAge(state.user.dob);
