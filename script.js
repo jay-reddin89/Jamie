@@ -605,28 +605,51 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
+    if (!state.user.dob) return;
+    const dob = new Date(state.user.dob);
+    const dobMs = dob.getTime();
+    const formatter = new Intl.NumberFormat();
+    const cache = {};
+
+    // Hoisted static values
+    const bornDayEl = document.getElementById('val-born-day');
+    if (bornDayEl) {
+        bornDayEl.textContent = dob.toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase();
+    }
+
     setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
+        const now = Date.now();
+        const diff = now - dobMs;
+
+        const update = (id, val) => {
+            if (!(id in cache)) cache[id] = document.getElementById(id);
+            const el = cache[id];
+            const strVal = val.toString();
+            if (el && el.textContent !== strVal) el.textContent = strVal;
+        };
+
         const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        const weeks = Math.floor(diff / 604800000);
+        const months = Math.floor(diff / 2629800000);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+        update('val-seconds', formatter.format(seconds));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', formatter.format(months));
+        update('val-weeks', formatter.format(weeks));
+        update('val-days', formatter.format(days));
+        update('val-hours', formatter.format(hours));
+        update('val-minutes', formatter.format(minutes));
 
-        const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
-
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        const minsF = diff / 60000, daysF = diff / 86400000;
+        update('est-heart', formatLarge(minsF * 72));
+        update('est-breaths', formatLarge(minsF * 14));
+        update('est-sleep', formatLarge(daysF * 8));
+        update('est-eat', formatLarge(daysF * 1.5));
+        update('est-blinks', formatLarge(daysF * 14400)); // 15 * 60 * 16 = 14400
     }, 1000);
 }
 
