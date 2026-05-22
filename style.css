@@ -203,6 +203,7 @@ header {
     font-size: 2.2rem;
     font-weight: var(--md-font-weight-semibold);
     color: var(--md-sys-color-secondary);
+    font-variant-numeric: tabular-nums;
 }
 
 .stream-label {
@@ -265,6 +266,7 @@ header {
     color: var(--md-sys-color-secondary);
     font-weight: var(--md-font-weight-semibold);
     font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Timeline */
@@ -560,6 +562,11 @@ header {
     transition: transform 0.2s ease;
 }
 
+[aria-expanded="true"] .toggle-arrow,
+[aria-expanded="true"] .sub-toggle-arrow {
+    transform: rotate(180deg);
+}
+
 /* PDF Export Polish */
 @media print {
     body { background: #fff !important; color: #1b1b1f !important; }
@@ -575,6 +582,7 @@ header {
 .sub-toggle-arrow {
     font-size: 0.7rem;
     opacity: 0.7;
+    transition: transform 0.2s ease;
 }
 
 #results-section a:hover {
@@ -737,4 +745,26 @@ header {
 
 .link-dashed-cyan {
     border-bottom: 1px dashed var(--accent-cyan);
+}
+
+button.section-label,
+button.sub-label {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+button.section-label {
+    display: flex;
+}
+
+button.sub-label {
+    display: flex;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: var(--md-font-weight-medium);
 }
