@@ -157,6 +157,7 @@ header {
     font-size: 2.2rem;
     font-weight: 600;
     color: var(--accent-amber);
+    font-variant-numeric: tabular-nums;
 }
 
 .stream-label {
@@ -276,6 +277,7 @@ header {
     color: var(--accent-amber);
     font-weight: 600;
     font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Timeline */
@@ -482,6 +484,7 @@ header {
     display: block;
     font-size: 1rem;
     font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 .mini-stat-box .lbl {
@@ -568,6 +571,35 @@ header {
     opacity: 0.7;
 }
 
+button.section-label, button.sub-label {
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+}
+
+button.section-label:focus-visible, button.sub-label:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 4px;
+}
+
+#settings-btn {
+    cursor: pointer;
+    font-size: 1.2rem;
+    background: none;
+    border: none;
+    color: inherit;
+    padding: 4px 8px;
+}
+
+#settings-btn:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
 #results-section a:hover {
     color: var(--accent-amber);
     border-bottom-style: solid;
@@ -586,7 +618,7 @@ header {
                 <div class="logo-v3">LIFE.STATS_V3</div>
                 <div class="sys-id">SYS.ID: 9X-441 // ONLINE</div>
             </div>
-            <div id="settings-btn" style="cursor: pointer; font-size: 1.2rem;">⋮</div>
+            <button id="settings-btn" aria-label="Settings">⋮</button>
         </header>
 
         <main id="main-content">
@@ -676,6 +708,8 @@ header {
         <div id="notification" class="hidden" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent-green); color: #000; border: 2px solid #fff; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; z-index: 2000;"></div>
     </div>
     <script>
+let collapsibleCounter = 0;
+
 const state = {
     user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
     settings: {
@@ -801,19 +835,24 @@ function createCollapsibleSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.className = 'collapsible-section';
 
-    const header = document.createElement('div');
+    const sectionId = `section-${collapsibleCounter++}`;
+    const header = document.createElement('button');
+    header.type = 'button';
     header.className = 'section-label';
-    header.style.cursor = 'pointer';
     header.style.display = 'flex';
     header.style.justifyContent = 'space-between';
     header.style.alignItems = 'center';
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', sectionId);
     header.innerHTML = `<span>${label}</span> <span class="toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = sectionId;
     content.className = 'section-content' + (isCollapsed ? ' hidden' : '');
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
+        header.setAttribute('aria-expanded', !hidden);
         header.querySelector('.toggle-arrow').textContent = hidden ? '[+]' : '[-]';
     });
 
@@ -826,19 +865,24 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
     const container = document.createElement('div');
     container.style.marginTop = '12px';
 
-    const header = document.createElement('div');
+    const subSectionId = `sub-section-${collapsibleCounter++}`;
+    const header = document.createElement('button');
+    header.type = 'button';
     header.className = 'sub-label';
-    header.style.cursor = 'pointer';
     header.style.display = 'flex';
     header.style.justifyContent = 'space-between';
     header.style.color = 'var(--accent-amber)';
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', subSectionId);
     header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = subSectionId;
     content.className = isCollapsed ? 'hidden' : '';
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
+        header.setAttribute('aria-expanded', !hidden);
         header.querySelector('.sub-toggle-arrow').textContent = hidden ? '[+]' : '[-]';
     });
 
