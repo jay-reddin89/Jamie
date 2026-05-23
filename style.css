@@ -203,6 +203,7 @@ header {
     font-size: 2.2rem;
     font-weight: var(--md-font-weight-semibold);
     color: var(--md-sys-color-secondary);
+    font-variant-numeric: tabular-nums;
 }
 
 .stream-label {
@@ -265,6 +266,7 @@ header {
     color: var(--md-sys-color-secondary);
     font-weight: var(--md-font-weight-semibold);
     font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Timeline */
@@ -575,6 +577,21 @@ header {
 .sub-toggle-arrow {
     font-size: 0.7rem;
     opacity: 0.7;
+}
+
+button.section-label, button.sub-label {
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+}
+
+button.section-label:focus-visible, button.sub-label:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 4px;
 }
 
 #results-section a:hover {
