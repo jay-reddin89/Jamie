@@ -583,6 +583,36 @@ header {
 }
 
 /* New classes for dark theme and to replace inline styles */
+button.section-label, button.sub-label {
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: calc(100% - 32px);
+    text-align: left;
+    display: flex;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s ease;
+}
+
+button.section-label {
+    padding: 8px 10px;
+    margin: 24px 16px 8px !important;
+    width: calc(100% - 32px);
+}
+
+button.section-label:hover, button.section-label:focus-visible {
+    background: rgba(187, 134, 252, 0.1);
+}
+
+button.sub-label {
+    width: 100%;
+}
+
+button.sub-label:hover, button.sub-label:focus-visible {
+    background: rgba(255, 176, 0, 0.05);
+}
+
 .settings-icon {
     cursor: pointer;
     background: transparent;
