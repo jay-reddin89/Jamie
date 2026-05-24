@@ -596,7 +596,7 @@ function getEraData(year) {
 // --- Utils ---
 
 function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+    const diff = Date.now() - new Date(dobStr).getTime();
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -604,28 +604,48 @@ function calculateAge(dobStr) {
     };
 }
 
+let liveUpdateInterval = null;
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (liveUpdateInterval) clearInterval(liveUpdateInterval);
+    if (!state.user.dob) return;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    // Hoist expensive operations and objects outside the interval
+    const dobDate = new Date(state.user.dob);
+    const dobTime = dobDate.getTime();
+    const bornDay = dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+    const nf = new Intl.NumberFormat();
+    const domCache = {};
 
-        const mins = diff / 60000, days = diff / 86400000;
+    const update = (id, val) => {
+        if (!(id in domCache)) {
+            domCache[id] = document.getElementById(id);
+        }
+        const el = domCache[id];
+        if (el && el.textContent !== val) {
+            el.textContent = val;
+        }
+    };
+
+    liveUpdateInterval = setInterval(() => {
+        const now = Date.now();
+        const diff = now - dobTime;
+
+        // Use pre-instantiated formatter and dirty checking for performance
+        update('val-seconds', nf.format(Math.floor(diff / 1000)));
+        update('val-years', String(Math.floor(diff / 31557600000)));
+        update('val-months', nf.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', nf.format(Math.floor(diff / 604800000)));
+        update('val-days', nf.format(Math.floor(diff / 86400000)));
+        update('val-hours', nf.format(Math.floor(diff / 3600000)));
+        update('val-minutes', nf.format(Math.floor(diff / 60000)));
+        update('val-born-day', bornDay);
+
+        const mins = diff / 60000;
+        const days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }

@@ -1,0 +1,3 @@
+## 2025-05-15 - [Optimizing High-Frequency DOM Updates]
+**Learning:** Significant performance gains (~82% reduction in tick duration) can be achieved in high-frequency (1s) update loops by hoisting expensive objects like `Intl.NumberFormat` and `Date` instances, implementing a local DOM element cache, and using dirty checking (`textContent !== val`) to avoid redundant DOM mutations and reflows.
+**Action:** Always hoist invariant calculations and formatting utilities outside of high-frequency intervals; implement lazy DOM caching and dirty checking for any element updated more than once per user interaction.
