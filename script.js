@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    updateInterval: null
 };
 
 const elements = {
@@ -595,8 +596,8 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+function calculateAge(dob) {
+    const diff = Date.now() - (typeof dob === 'string' ? new Date(dob) : dob);
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -605,36 +606,50 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (state.updateInterval) clearInterval(state.updateInterval);
+    if (!state.user.dob) return;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+    const dobMs = new Date(state.user.dob).getTime();
+    const bornDay = new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+    const domCache = {};
+
+    state.updateInterval = setInterval(() => {
+        const now = Date.now();
+        const diff = now - dobMs;
+        const age = calculateAge(dobMs);
+
+        const update = (id, val) => {
+            if (!(id in domCache)) domCache[id] = document.getElementById(id);
+            const el = domCache[id];
+            if (el && el.textContent !== val) el.textContent = val;
+        };
+
+        update('val-seconds', numFormat.format(Math.floor(diff / 1000)));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', numFormat.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numFormat.format(Math.floor(diff / 604800000)));
+        update('val-days', numFormat.format(Math.floor(diff / 86400000)));
+        update('val-hours', numFormat.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numFormat.format(age.minutes));
+        update('val-born-day', bornDay);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
+
+// Hoisted formatter to avoid repeated object creation
+const numFormat = new Intl.NumberFormat();
 
 function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return numFormat.format(Math.floor(num));
 }
 
 function getZodiac(date) {
