@@ -133,6 +133,8 @@ function showResults() {
 
 // --- Layout Helpers ---
 
+let collapsibleCounter = 0;
+
 function createDataList(items) {
     const list = document.createElement('div');
     list.className = 'data-list';
@@ -150,20 +152,27 @@ function createDataList(items) {
 }
 
 function createCollapsibleSection(label, isCollapsed = true) {
+    collapsibleCounter++;
+    const contentId = `collapsible-content-${collapsibleCounter}`;
     const container = document.createElement('div');
     container.className = 'collapsible-section';
 
-    const header = document.createElement('div');
+    const header = document.createElement('button');
+    header.type = 'button';
     header.className = 'section-label flex-row align-center pointer justify-between';
     header.style.margin = '24px 16px 8px'; // Keeping some margins that were original
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', contentId);
     header.innerHTML = `<span>${label}</span> <span class="toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = contentId;
     content.className = 'section-content' + (isCollapsed ? ' hidden' : '');
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
         header.querySelector('.toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        header.setAttribute('aria-expanded', !hidden);
     });
 
     container.appendChild(header);
@@ -172,20 +181,27 @@ function createCollapsibleSection(label, isCollapsed = true) {
 }
 
 function createCollapsibleSubSection(label, isCollapsed = true) {
+    collapsibleCounter++;
+    const contentId = `collapsible-content-${collapsibleCounter}`;
     const container = document.createElement('div');
     container.className = 'form-field-wrapper';
 
-    const header = document.createElement('div');
+    const header = document.createElement('button');
+    header.type = 'button';
     header.className = 'sub-label pointer flex-row justify-between';
     header.style.color = 'var(--accent-amber)';
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', contentId);
     header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
 
     const content = document.createElement('div');
+    content.id = contentId;
     content.className = isCollapsed ? 'hidden' : '';
 
     header.addEventListener('click', () => {
         const hidden = content.classList.toggle('hidden');
         header.querySelector('.sub-toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        header.setAttribute('aria-expanded', !hidden);
     });
 
     container.appendChild(header);

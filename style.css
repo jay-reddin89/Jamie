@@ -174,6 +174,16 @@ header {
     font-weight: var(--md-font-weight-medium);
 }
 
+button.sub-label {
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+    font-weight: var(--md-font-weight-medium);
+}
+
 .location-label {
     font-size: 0.85rem;
     color: var(--md-sys-color-on-surface-variant);
@@ -525,7 +535,13 @@ header {
 .section-label {
     border-left: 3px solid var(--md-sys-color-primary);
     padding-left: 10px;
-    background: linear-gradient(90deg, rgba(13, 71, 161, 0.05), transparent);
+    background: linear-gradient(90deg, rgba(13, 71, 161, 0.05), transparent) !important;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    font-family: inherit;
+    text-align: left;
+    width: calc(100% - 32px);
 }
 
 /* Custom scrollbar */
