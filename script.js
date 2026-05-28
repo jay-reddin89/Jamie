@@ -595,8 +595,12 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Calculate age stats from a date.
+ * Optimized to accept pre-calculated diff to avoid redundant Date allocations.
+ */
+function calculateAge(dobStr, precalculatedDiff = null) {
+    const diff = precalculatedDiff !== null ? precalculatedDiff : (new Date() - new Date(dobStr));
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -604,21 +608,49 @@ function calculateAge(dobStr) {
     };
 }
 
-function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+// Global variable to manage live update interval and prevent leaks
+let liveUpdateInterval = null;
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+function startLiveUpdates() {
+    if (!state.user.dob) return;
+
+    // Clear any existing interval
+    if (liveUpdateInterval) clearInterval(liveUpdateInterval);
+
+    // Pre-calculate constants to avoid redundant work in the interval
+    const dob = new Date(state.user.dob);
+    // Hoist formatters for better performance (avoid re-allocation)
+    const liveStatsFormatter = new Intl.NumberFormat(undefined);
+    const bornDay = dob.toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase();
+
+    // Lazy DOM element caching
+    const elementsCache = {};
+    const update = (id, val) => {
+        if (!elementsCache[id]) {
+            elementsCache[id] = document.getElementById(id);
+        }
+        const el = elementsCache[id];
+        if (el) {
+            const newVal = String(val);
+            // Dirty checking: only update DOM if value actually changed
+            if (el.textContent !== newVal) {
+                el.textContent = newVal;
+            }
+        }
+    };
+
+    liveUpdateInterval = setInterval(() => {
+        const diff = new Date() - dob;
+        const age = calculateAge(null, diff);
+
+        update('val-seconds', liveStatsFormatter.format(Math.floor(diff / 1000)));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', liveStatsFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', liveStatsFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', liveStatsFormatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', liveStatsFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', liveStatsFormatter.format(age.minutes));
+        update('val-born-day', bornDay);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
