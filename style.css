@@ -138,6 +138,39 @@ header {
     margin: 24px 16px 8px;
     font-weight: var(--md-font-weight-semibold);
     text-transform: uppercase;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 32px);
+    cursor: pointer;
+    text-align: left;
+}
+
+.section-label:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary) !important;
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+button.sub-label {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: var(--accent-amber);
+    width: 100%;
+}
+
+button.sub-label:focus-visible {
+    outline: 2px solid var(--accent-amber) !important;
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 /* Profile Card */
@@ -525,7 +558,7 @@ header {
 .section-label {
     border-left: 3px solid var(--md-sys-color-primary);
     padding-left: 10px;
-    background: linear-gradient(90deg, rgba(13, 71, 161, 0.05), transparent);
+    background: linear-gradient(90deg, rgba(13, 71, 161, 0.05), transparent) !important;
 }
 
 /* Custom scrollbar */
@@ -554,10 +587,28 @@ header {
     transition: all 0.3s ease-in-out;
 }
 
-.toggle-arrow {
-    font-size: 0.8rem;
+.toggle-arrow, .sub-toggle-arrow {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-arrow::before, .sub-toggle-arrow::before {
+    content: '▼';
+    font-size: 0.7rem;
     color: var(--md-sys-color-primary);
-    transition: transform 0.2s ease;
+}
+
+.sub-toggle-arrow::before {
+    color: var(--accent-amber);
+}
+
+[aria-expanded="false"] .toggle-arrow,
+[aria-expanded="false"] .sub-toggle-arrow {
+    transform: rotate(-90deg);
 }
 
 /* PDF Export Polish */

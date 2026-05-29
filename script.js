@@ -149,47 +149,49 @@ function createDataList(items) {
     return list;
 }
 
+let collapsibleCounter = 0;
+
 function createCollapsibleSection(label, isCollapsed = true) {
+    const id = `collapsible-${collapsibleCounter++}`;
     const container = document.createElement('div');
     container.className = 'collapsible-section';
-
-    const header = document.createElement('div');
+    const header = document.createElement('button');
+    header.type = 'button';
     header.className = 'section-label flex-row align-center pointer justify-between';
-    header.style.margin = '24px 16px 8px'; // Keeping some margins that were original
-    header.innerHTML = `<span>${label}</span> <span class="toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
-
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', id);
+    header.innerHTML = `<span>${label}</span> <span class="toggle-arrow"></span>`;
     const content = document.createElement('div');
+    content.id = id;
     content.className = 'section-content' + (isCollapsed ? ' hidden' : '');
-
     header.addEventListener('click', () => {
-        const hidden = content.classList.toggle('hidden');
-        header.querySelector('.toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        const expanded = header.getAttribute('aria-expanded') === 'true';
+        header.setAttribute('aria-expanded', !expanded);
+        content.classList.toggle('hidden');
     });
-
-    container.appendChild(header);
-    container.appendChild(content);
+    container.append(header, content);
     return { container, content };
 }
 
 function createCollapsibleSubSection(label, isCollapsed = true) {
+    const id = `collapsible-${collapsibleCounter++}`;
     const container = document.createElement('div');
     container.className = 'form-field-wrapper';
-
-    const header = document.createElement('div');
+    const header = document.createElement('button');
+    header.type = 'button';
     header.className = 'sub-label pointer flex-row justify-between';
-    header.style.color = 'var(--accent-amber)';
-    header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow">${isCollapsed ? '[+]' : '[-]'}</span>`;
-
+    header.setAttribute('aria-expanded', !isCollapsed);
+    header.setAttribute('aria-controls', id);
+    header.innerHTML = `<span>${label}</span> <span class="sub-toggle-arrow"></span>`;
     const content = document.createElement('div');
+    content.id = id;
     content.className = isCollapsed ? 'hidden' : '';
-
     header.addEventListener('click', () => {
-        const hidden = content.classList.toggle('hidden');
-        header.querySelector('.sub-toggle-arrow').textContent = hidden ? '[+]' : '[-]';
+        const expanded = header.getAttribute('aria-expanded') === 'true';
+        header.setAttribute('aria-expanded', !expanded);
+        content.classList.toggle('hidden');
     });
-
-    container.appendChild(header);
-    container.appendChild(content);
+    container.append(header, content);
     return { container, content };
 }
 
