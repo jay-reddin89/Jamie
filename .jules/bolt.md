@@ -1,0 +1,3 @@
+## 2025-05-14 - Optimizing High-Frequency DOM Updates
+**Learning:** In vanilla JavaScript applications with high-frequency (e.g., 1s) update loops, the primary performance bottlenecks are often redundant DOM lookups (`document.getElementById`), unnecessary DOM writes (updating `textContent` with the same value), and repeated object instantiation (like `new Date()` or `new Intl.NumberFormat()`).
+**Action:** Always implement a DOM cache and a "dirty checking" mechanism for values in frequent intervals. Cache expensive objects like Date parsers and NumberFormatters at the state level to minimize CPU and memory churn.
