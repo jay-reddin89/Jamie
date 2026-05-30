@@ -131,6 +131,17 @@ header {
     transition: box-shadow 0.2s ease;
 }
 
+button.section-label, button.sub-label {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    width: calc(100% - 32px);
+    display: flex;
+}
+
 .section-label {
     font-size: 0.85rem;
     color: var(--md-sys-color-primary);
@@ -526,6 +537,15 @@ header {
     border-left: 3px solid var(--md-sys-color-primary);
     padding-left: 10px;
     background: linear-gradient(90deg, rgba(13, 71, 161, 0.05), transparent);
+}
+
+button.section-label:hover, button.sub-label:hover {
+    filter: brightness(1.2);
+}
+
+button.section-label:focus-visible, button.sub-label:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary) !important;
+    outline-offset: 4px;
 }
 
 /* Custom scrollbar */
