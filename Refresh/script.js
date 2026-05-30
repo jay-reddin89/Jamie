@@ -204,24 +204,42 @@ function populateDashboard() {
 function startLiveCounters() {
     updateLiveCounters();
     if (updateInterval) clearInterval(updateInterval);
-    updateInterval = setInterval(updateLiveCounters, 1000);
+    updateInterval = setInterval(() => {
+        updateLiveCounters();
+        updateLifetimeStats();
+    }, 1000);
+}
+
+// Hoist formatters and lazy DOM cache for high-frequency updates
+const liveFormatter = new Intl.NumberFormat();
+const liveDomCache = {};
+
+function updateLiveCounterElement(id, value) {
+    if (!liveDomCache[id]) {
+        liveDomCache[id] = document.getElementById(id);
+    }
+    const el = liveDomCache[id];
+    const formattedValue = typeof value === 'number' ? liveFormatter.format(value) : value;
+    if (el && el.textContent !== String(formattedValue)) {
+        el.textContent = formattedValue;
+    }
 }
 
 function updateLiveCounters() {
     if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
+    const now = new Date();
+    const age = calculateAge(userData.dob, now);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    updateLiveCounterElement('counter-years', age.years);
+    updateLiveCounterElement('counter-months', age.months);
+    updateLiveCounterElement('counter-weeks', age.weeks);
+    updateLiveCounterElement('counter-days', age.days);
+    updateLiveCounterElement('counter-hours', age.hours);
+    updateLiveCounterElement('counter-minutes', age.minutes);
+    updateLiveCounterElement('counter-seconds', age.seconds);
 }
 
-function calculateAge(birthDate) {
-    const now = new Date();
+function calculateAge(birthDate, now = new Date()) {
     const diff = now - birthDate;
 
     const seconds = Math.floor(diff / 1000);
@@ -240,15 +258,16 @@ function calculateAge(birthDate) {
 // ==========================================
 function updateLifetimeStats() {
     if (!userData.dob) return;
-    const diff = new Date() - userData.dob;
+    const now = new Date();
+    const diff = now - userData.dob;
     const mins = diff / 60000;
     const days = diff / 86400000;
 
-    document.getElementById('stat-heartbeats').textContent = formatLargeNumber(Math.floor(mins * 72));
-    document.getElementById('stat-breaths').textContent = formatLargeNumber(Math.floor(mins * 14));
-    document.getElementById('stat-sleep').textContent = formatLargeNumber(Math.floor(days * 8));
-    document.getElementById('stat-meals').textContent = formatLargeNumber(Math.floor(days * 1.5));
-    document.getElementById('stat-blinks').textContent = formatLargeNumber(Math.floor(days * 15 * 60 * 16));
+    updateLiveCounterElement('stat-heartbeats', formatLargeNumber(Math.floor(mins * 72)));
+    updateLiveCounterElement('stat-breaths', formatLargeNumber(Math.floor(mins * 14)));
+    updateLiveCounterElement('stat-sleep', formatLargeNumber(Math.floor(days * 8)));
+    updateLiveCounterElement('stat-meals', formatLargeNumber(Math.floor(days * 1.5)));
+    updateLiveCounterElement('stat-blinks', formatLargeNumber(Math.floor(days * 15 * 60 * 16)));
 }
 
 // ==========================================

@@ -3,7 +3,8 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    liveUpdateInterval: null
 };
 
 const elements = {
@@ -198,6 +199,12 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
 function renderResults() {
     const sections = state.settings.sections;
     elements.resultsSection.innerHTML = '';
+
+    // Clear any existing live update interval to avoid leaks
+    if (state.liveUpdateInterval) {
+        clearInterval(state.liveUpdateInterval);
+        state.liveUpdateInterval = null;
+    }
 
     // Profile Panel
     const profile = document.createElement('div');
@@ -595,8 +602,12 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Calculates age components from DOB.
+ * Optimized to accept pre-calculated diff to avoid redundant Date allocations.
+ */
+function calculateAge(dobStr, preCalcDiff = null) {
+    const diff = preCalcDiff !== null ? preCalcDiff : (new Date() - new Date(dobStr));
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -605,20 +616,39 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    // Hoist formatters and pre-calculate static values
+    const numFormatter = new Intl.NumberFormat();
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+    // Lazy DOM cache for high-frequency updates
+    const domCache = {};
+    const update = (id, val) => {
+        if (!domCache[id]) {
+            domCache[id] = document.getElementById(id);
+        }
+        const el = domCache[id];
+        // Dirty checking: only update DOM if value actually changed
+        if (el && el.textContent !== String(val)) {
+            el.textContent = val;
+        }
+    };
+
+    state.liveUpdateInterval = setInterval(() => {
+        if (!state.user.dob) return;
+        const dobDate = new Date(state.user.dob);
+        const dayBorn = dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+
+        const now = new Date();
+        const diff = now - dobDate;
+        const age = calculateAge(null, diff);
+
+        update('val-seconds', numFormatter.format(Math.floor(diff / 1000)));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', numFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', numFormatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', numFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numFormatter.format(age.minutes));
+        update('val-born-day', dayBorn);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
@@ -630,11 +660,14 @@ function startLiveUpdates() {
     }, 1000);
 }
 
+// Hoisted formatter for global performance
+const largeNumFormatter = new Intl.NumberFormat();
+
 function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return largeNumFormatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
