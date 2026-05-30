@@ -207,22 +207,52 @@ function startLiveCounters() {
     updateInterval = setInterval(updateLiveCounters, 1000);
 }
 
+// DOM Caches for high-frequency updates
+const countersCache = {};
+const statsCache = {};
+const previousValues = {};
+
+/**
+ * Update DOM element with dirty checking and caching
+ * @param {string} id - Element ID
+ * @param {string|number} value - New value
+ * @param {Object} cache - Cache object
+ */
+function updateElementCached(id, value, cache) {
+    if (previousValues[id] === value) return;
+
+    let el = cache[id];
+    if (!el) {
+        el = document.getElementById(id);
+        if (el) cache[id] = el;
+    }
+
+    if (el) {
+        el.textContent = value;
+        previousValues[id] = value;
+    }
+}
+
 function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    updateElementCached('counter-years', formatNumber(age.years), countersCache);
+    updateElementCached('counter-months', formatNumber(age.months), countersCache);
+    updateElementCached('counter-weeks', formatNumber(age.weeks), countersCache);
+    updateElementCached('counter-days', formatNumber(age.days), countersCache);
+    updateElementCached('counter-hours', formatNumber(age.hours), countersCache);
+    updateElementCached('counter-minutes', formatNumber(age.minutes), countersCache);
+    updateElementCached('counter-seconds', formatNumber(age.seconds), countersCache);
 }
 
+/**
+ * Optimized age calculation to reduce Date object overhead
+ * @param {Date} birthDate - Birth Date object
+ * @returns {Object} Age breakdown
+ */
 function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+    const diff = new Date() - birthDate;
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -232,23 +262,26 @@ function calculateAge(birthDate) {
     const months = Math.floor(days / 30.44);
     const years = Math.floor(days / 365.25);
 
-    return { years, months, weeks, days, hours, minutes, seconds };
+    return { years, months, weeks, days, hours, minutes, seconds, diff };
 }
 
 // ==========================================
 // LIFETIME STATISTICS
 // ==========================================
+/**
+ * Lifetime statistics update with performance optimizations
+ */
 function updateLifetimeStats() {
     if (!userData.dob) return;
-    const diff = new Date() - userData.dob;
-    const mins = diff / 60000;
-    const days = diff / 86400000;
+    const age = calculateAge(userData.dob);
+    const mins = age.diff / 60000;
+    const days = age.diff / 86400000;
 
-    document.getElementById('stat-heartbeats').textContent = formatLargeNumber(Math.floor(mins * 72));
-    document.getElementById('stat-breaths').textContent = formatLargeNumber(Math.floor(mins * 14));
-    document.getElementById('stat-sleep').textContent = formatLargeNumber(Math.floor(days * 8));
-    document.getElementById('stat-meals').textContent = formatLargeNumber(Math.floor(days * 1.5));
-    document.getElementById('stat-blinks').textContent = formatLargeNumber(Math.floor(days * 15 * 60 * 16));
+    updateElementCached('stat-heartbeats', formatLargeNumber(Math.floor(mins * 72)), statsCache);
+    updateElementCached('stat-breaths', formatLargeNumber(Math.floor(mins * 14)), statsCache);
+    updateElementCached('stat-sleep', formatLargeNumber(Math.floor(days * 8)), statsCache);
+    updateElementCached('stat-meals', formatLargeNumber(Math.floor(days * 1.5)), statsCache);
+    updateElementCached('stat-blinks', formatLargeNumber(Math.floor(days * 15 * 60 * 16)), statsCache);
 }
 
 // ==========================================
