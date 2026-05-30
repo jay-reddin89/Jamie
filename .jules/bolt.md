@@ -1,0 +1,3 @@
+## 2025-05-14 - [High-Frequency Update Loop Optimization]
+**Learning:** In applications with 1-second update loops, redundant DOM queries (document.getElementById), date parsing (new Date(string)), and number formatting (.toLocaleString()) create significant CPU overhead. Browser engines often recreate internal formatter instances when .toLocaleString() is called without a cached Intl.NumberFormat object.
+**Action:** Use a 'state' object to cache DOM references and a single Intl.NumberFormat instance. Pre-parse static data (like DOB) once. Implement dirty checking to skip DOM writes when values haven't changed.
