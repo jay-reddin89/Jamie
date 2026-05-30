@@ -3,7 +3,9 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    lastValues: {},
+    domCache: {}
 };
 
 const elements = {
@@ -38,6 +40,7 @@ function loadUserData() {
     const savedData = localStorage.getItem('jr_life_facts_user');
     if (savedData) {
         state.user = JSON.parse(savedData);
+        if (state.user.dob) state.user.dobDate = new Date(state.user.dob);
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
         document.getElementById('user-country').value = state.user.country;
@@ -64,6 +67,7 @@ function saveUserData() {
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
 
+    state.user.dobDate = new Date(state.user.dob);
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
     elements.generateBtn.classList.remove('hidden');
@@ -595,38 +599,53 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+function calculateAge(dob) {
+    const birthDate = dob instanceof Date ? dob : new Date(dob);
+    const diff = new Date() - birthDate;
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
-        seconds: Math.floor(diff / 1000)
+        seconds: Math.floor(diff / 1000),
+        diff
     };
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const formatter = new Intl.NumberFormat();
+    const updateStat = (id, val) => {
+        if (!(id in state.domCache)) {
+            state.domCache[id] = document.getElementById(id);
+        }
+        const el = state.domCache[id];
+        if (el && state.lastValues[id] !== val) {
+            el.textContent = val;
+            state.lastValues[id] = val;
+        }
+    };
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    setInterval(() => {
+        if (!state.user.dobDate) return;
+        const age = calculateAge(state.user.dobDate);
+        const diff = age.diff;
+
+        updateStat('val-seconds', formatter.format(age.seconds));
+        updateStat('val-years', age.years);
+        updateStat('val-months', formatter.format(Math.floor(diff / 2629800000)));
+        updateStat('val-weeks', formatter.format(Math.floor(diff / 604800000)));
+        updateStat('val-days', formatter.format(Math.floor(diff / 86400000)));
+        updateStat('val-hours', formatter.format(Math.floor(diff / 3600000)));
+        updateStat('val-minutes', formatter.format(age.minutes));
+
+        if (!state.lastValues['val-born-day']) {
+            updateStat('val-born-day', state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        }
 
         const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
-
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        updateStat('est-heart', formatLarge(mins * 72));
+        updateStat('est-breaths', formatLarge(mins * 14));
+        updateStat('est-sleep', formatLarge(days * 8));
+        updateStat('est-eat', formatLarge(days * 1.5));
+        updateStat('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 

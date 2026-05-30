@@ -14,6 +14,25 @@ let userData = {
 
 let updateInterval = null;
 let isInitialized = false;
+const domCache = {};
+const lastValues = {};
+const numberFormatter = new Intl.NumberFormat();
+
+/**
+ * Optimized DOM update helper with dirty checking and caching.
+ * @param {string} id - The element ID to update.
+ * @param {string|number} val - The new value.
+ */
+function updateStat(id, val) {
+    if (!(id in domCache)) {
+        domCache[id] = document.getElementById(id);
+    }
+    const el = domCache[id];
+    if (el && lastValues[id] !== val) {
+        el.textContent = val;
+        lastValues[id] = val;
+    }
+}
 
 // ==========================================
 // INITIALIZATION
@@ -211,16 +230,17 @@ function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    updateStat('counter-years', numberFormatter.format(age.years));
+    updateStat('counter-months', numberFormatter.format(age.months));
+    updateStat('counter-weeks', numberFormatter.format(age.weeks));
+    updateStat('counter-days', numberFormatter.format(age.days));
+    updateStat('counter-hours', numberFormatter.format(age.hours));
+    updateStat('counter-minutes', numberFormatter.format(age.minutes));
+    updateStat('counter-seconds', numberFormatter.format(age.seconds));
 }
 
-function calculateAge(birthDate) {
+function calculateAge(dob) {
+    const birthDate = dob instanceof Date ? dob : new Date(dob);
     const now = new Date();
     const diff = now - birthDate;
 
@@ -244,11 +264,11 @@ function updateLifetimeStats() {
     const mins = diff / 60000;
     const days = diff / 86400000;
 
-    document.getElementById('stat-heartbeats').textContent = formatLargeNumber(Math.floor(mins * 72));
-    document.getElementById('stat-breaths').textContent = formatLargeNumber(Math.floor(mins * 14));
-    document.getElementById('stat-sleep').textContent = formatLargeNumber(Math.floor(days * 8));
-    document.getElementById('stat-meals').textContent = formatLargeNumber(Math.floor(days * 1.5));
-    document.getElementById('stat-blinks').textContent = formatLargeNumber(Math.floor(days * 15 * 60 * 16));
+    updateStat('stat-heartbeats', formatLargeNumber(Math.floor(mins * 72)));
+    updateStat('stat-breaths', formatLargeNumber(Math.floor(mins * 14)));
+    updateStat('stat-sleep', formatLargeNumber(Math.floor(days * 8)));
+    updateStat('stat-meals', formatLargeNumber(Math.floor(days * 1.5)));
+    updateStat('stat-blinks', formatLargeNumber(Math.floor(days * 15 * 60 * 16)));
 }
 
 // ==========================================
