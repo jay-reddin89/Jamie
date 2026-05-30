@@ -65,7 +65,7 @@
             <section id="loading-section" class="hidden">
                 <div class="loading-box">
                     <div class="item-subtitle" id="loading-status">SCANNING DATA REPOSITORIES...</div>
-                    <div class="progress-bar">
+                    <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar-container">
                         <div id="progress-bar" class="progress-fill"></div>
                     </div>
                 </div>
@@ -78,9 +78,9 @@
         </main>
 
         <!-- Settings Modal -->
-        <div id="settings-modal" class="modal-overlay hidden">
+        <div id="settings-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <div class="card modal-card">
-                <h3 class="modal-title">SYSTEM SETTINGS</h3>
+                <h3 class="modal-title" id="modal-title">SYSTEM SETTINGS</h3>
                 <button id="puter-signin-btn" class="btn-primary btn-puter">SIGN IN PUTER</button>
                 <div id="puter-user-info" class="hidden item-subtitle puter-info">
                     USER_AUTH: <span id="puter-username" class="username-accent"></span>
@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <div id="notification" class="hidden notification-toast"></div>
+        <div id="notification" class="hidden notification-toast" role="status" aria-live="polite"></div>
     </div>
     <script src="script.js" type="module"></script>
 </body>

@@ -32,6 +32,19 @@ function setupEventListeners() {
     document.getElementById('settings-save-btn').addEventListener('click', applySettings);
     document.getElementById('user-pic').addEventListener('change', handlePicUpload);
     elements.puterSigninBtn.addEventListener('click', handlePuterSignIn);
+
+    // Modal accessibility: Close on Escape or click outside
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.settingsModal.classList.contains('hidden')) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
+
+    elements.settingsModal.addEventListener('click', (e) => {
+        if (e.target === elements.settingsModal) {
+            toggleModal(elements.settingsModal, false);
+        }
+    });
 }
 
 function loadUserData() {
@@ -113,15 +126,34 @@ function showNotification(msg) {
 function startGeneration() {
     elements.inputSection.classList.add('hidden');
     elements.loadingSection.classList.remove('hidden');
+
+    const statusMessages = [
+        "DECRYPTING BIO-SIGNATURES...",
+        "MAPPING TEMPORAL VORTEX...",
+        "ACCESSING GLOBAL_HISTORY_DB...",
+        "CORRELATING CELESTIAL ALIGNMENTS...",
+        "CALIBRATING BIOMETRIC STREAM...",
+        "SYNTHESIZING LIFE.STATS..."
+    ];
+    const statusEl = document.getElementById('loading-status');
+    const progressBarContainer = document.getElementById('progress-bar-container');
+
     let progress = 0;
     const interval = setInterval(() => {
-        progress += Math.random() * 15;
+        progress += Math.random() * 10;
         if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
             setTimeout(showResults, 600);
         }
+
         elements.progressBar.style.width = `${progress}%`;
+        if (progressBarContainer) progressBarContainer.setAttribute('aria-valuenow', Math.floor(progress));
+
+        // Update status message based on progress
+        const msgIndex = Math.min(statusMessages.length - 1, Math.floor((progress / 100) * statusMessages.length));
+        if (statusEl) statusEl.textContent = statusMessages[msgIndex];
+
     }, 150);
 }
 
