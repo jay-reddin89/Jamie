@@ -1,0 +1,3 @@
+## 2025-03-27 - High-Frequency DOM & String Optimization
+**Learning:** In this vanilla SPA, the 1s update loop for live counters was a major source of main-thread activity due to repeated `new Date()` parsing, `toLocaleString()` calls, and redundant DOM writes. Using `Intl.NumberFormat` is verified to be significantly faster than `Number.toLocaleString()`. Additionally, implementing a lazy DOM cache with `.isConnected` checks allows for efficient element retrieval even when sections are re-rendered.
+**Action:** Always pre-parse static data (like birth dates) and pre-calculate locale-dependent strings (like day of birth) outside of high-frequency loops. Use a centralized updater with dirty checking to minimize layout thrashing.
