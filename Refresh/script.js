@@ -15,6 +15,10 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+const domCache = {};
+const lastValues = {};
+const numberFormatter = new Intl.NumberFormat('en-US');
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -211,13 +215,20 @@ function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    const update = (id, val) => {
+        if (lastValues[id] === val) return;
+        if (!domCache[id]) domCache[id] = document.getElementById(id);
+        if (domCache[id]) domCache[id].textContent = val;
+        lastValues[id] = val;
+    };
+
+    update('counter-years', formatNumber(age.years));
+    update('counter-months', formatNumber(age.months));
+    update('counter-weeks', formatNumber(age.weeks));
+    update('counter-days', formatNumber(age.days));
+    update('counter-hours', formatNumber(age.hours));
+    update('counter-minutes', formatNumber(age.minutes));
+    update('counter-seconds', formatNumber(age.seconds));
 }
 
 function calculateAge(birthDate) {
@@ -445,14 +456,14 @@ function clearUserData() {
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 // ==========================================

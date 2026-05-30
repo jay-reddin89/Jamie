@@ -1,10 +1,12 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
     isPuterSignedIn: false
 };
+
+const numberFormatter = new Intl.NumberFormat();
 
 const elements = {
     inputSection: document.getElementById('input-section'),
@@ -38,6 +40,7 @@ function loadUserData() {
     const savedData = localStorage.getItem('jr_life_facts_user');
     if (savedData) {
         state.user = JSON.parse(savedData);
+        if (state.user.dob) state.user.dobDate = new Date(state.user.dob);
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
         document.getElementById('user-country').value = state.user.country;
@@ -64,6 +67,7 @@ function saveUserData() {
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
 
+    state.user.dobDate = new Date(state.user.dob);
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
     elements.generateBtn.classList.remove('hidden');
@@ -595,8 +599,9 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+function calculateAge(dob, now = new Date()) {
+    const dobDate = dob instanceof Date ? dob : new Date(dob);
+    const diff = now - dobDate;
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -605,20 +610,41 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (!state.user.dob) return;
+    const domCache = {};
+    const lastValues = {};
+    const dobDate = state.user.dobDate || new Date(state.user.dob);
+    const dayBorn = dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
+    const ids = [
+        'val-seconds', 'val-years', 'val-months', 'val-weeks', 'val-days', 'val-hours', 'val-minutes', 'val-born-day',
+        'est-heart', 'est-breaths', 'est-sleep', 'est-eat', 'est-blinks'
+    ];
+
+    ids.forEach(id => domCache[id] = document.getElementById(id));
+
+    const update = (id, val) => {
+        if (lastValues[id] === val) return;
+        const el = domCache[id];
+        if (el) el.textContent = val;
+        lastValues[id] = val;
+    };
+
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
+
+    state.liveUpdateInterval = setInterval(() => {
+        const now = new Date();
+        const diff = now - dobDate;
+        const age = calculateAge(dobDate, now);
+
+        update('val-seconds', numberFormatter.format(Math.floor(diff / 1000)));
         update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        update('val-months', numberFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numberFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', numberFormatter.format(Math.floor(diff / 86400000)));
+        update('val-hours', numberFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numberFormatter.format(age.minutes));
+        update('val-born-day', dayBorn);
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
@@ -634,7 +660,7 @@ function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return numberFormatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
