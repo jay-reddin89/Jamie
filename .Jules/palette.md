@@ -1,0 +1,3 @@
+## 2025-05-14 - Modal Accessibility and Keyboard Navigation
+**Learning:** Interactive overlays (modals) in this application were initially implemented using simple class toggles (`.hidden`), missing critical ARIA attributes and keyboard interaction patterns. Without `role="dialog"` and `aria-modal="true"`, screen readers do not treat the overlay as a distinct context. Furthermore, the absence of an 'Escape' key listener creates a trap for keyboard-only users.
+**Action:** Always ensure modals have proper ARIA labels linked to their titles and implement a global keydown listener for 'Escape' that is conditional on the modal's visibility.
