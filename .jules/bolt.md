@@ -1,0 +1,3 @@
+## 2025-05-15 - DOM Caching in High-Frequency Loops
+**Learning:** In applications where the UI can be re-rendered or reset (e.g., using `innerHTML = ''`), DOM element caches stored in long-running closures (like `setInterval`) will eventually point to detached nodes. While the current implementation creates a local `elementsCache` inside `startLiveUpdates` (which is called anew on each render), it is safer to explicitly manage the interval reference and clear it before each re-generation to ensure the closure doesn't leak or hold stale references.
+**Action:** Always ensure high-frequency update intervals are cleared and re-initialized when their target UI is rebuilt, and keep caches scoped to the interval's lifetime.
