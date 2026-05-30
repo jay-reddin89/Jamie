@@ -1,0 +1,3 @@
+## 2026-04-01 - Optimizing high-frequency dashboard updates
+**Learning:** High-frequency intervals (1s) in vanilla JS apps often suffer from redundant DOM lookups, expensive date formatting (`toLocaleDateString`), and unnecessary `textContent` updates. Hoisting invariants and implementing lazy DOM caching significantly reduces the main thread workload per tick.
+**Action:** Always check for repeated `document.getElementById` calls in intervals and replace them with a lazy caching mechanism. Pre-calculate static derivations of user data (like born day) during initialization rather than on every tick.
