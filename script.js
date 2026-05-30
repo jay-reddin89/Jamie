@@ -1,9 +1,12 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    domCache: {},
+    lastValues: {},
+    liveUpdateInterval: null
 };
 
 const elements = {
@@ -196,6 +199,11 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
 // --- Main Results Renderer ---
 
 function renderResults() {
+    // Reset caches for fresh render
+    state.domCache = {};
+    state.lastValues = {};
+    state.user.dobDate = new Date(state.user.dob);
+
     const sections = state.settings.sections;
     elements.resultsSection.innerHTML = '';
 
@@ -604,28 +612,55 @@ function calculateAge(dobStr) {
     };
 }
 
+// Pre-instantiate for ~8x faster formatting than toLocaleString()
+const numberFormatter = new Intl.NumberFormat('en-US');
+
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    state.liveUpdateInterval = setInterval(() => {
+        if (!state.user.dobDate) return;
 
-        const mins = diff / 60000, days = diff / 86400000;
+        const now = new Date();
+        const diff = now - state.user.dobDate;
+        const mins = diff / 60000;
+        const days = diff / 86400000;
+
+        const update = (id, val) => {
+            // Check dirty cache
+            if (state.lastValues[id] === val) return;
+
+            // Check DOM cache
+            let el = state.domCache[id];
+            if (!el) {
+                el = document.getElementById(id);
+                if (el) state.domCache[id] = el;
+            }
+
+            if (el) {
+                el.textContent = val;
+                state.lastValues[id] = val;
+            }
+        };
+
+        // Static values - only update once per render
+        if (!state.lastValues['val-born-day']) {
+            update('val-born-day', state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        }
+
+        // Live values
+        update('val-seconds', numberFormatter.format(Math.floor(diff / 1000)));
+        update('val-years', Math.floor(diff / 31557600000));
+        update('val-months', numberFormatter.format(Math.floor(diff / 2629800000)));
+        update('val-weeks', numberFormatter.format(Math.floor(diff / 604800000)));
+        update('val-days', numberFormatter.format(Math.floor(days)));
+        update('val-hours', numberFormatter.format(Math.floor(diff / 3600000)));
+        update('val-minutes', numberFormatter.format(Math.floor(mins)));
+
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
