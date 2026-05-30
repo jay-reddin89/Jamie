@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LIFE.STATS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://js.puter.com/v2/"></script>
+  <script type="module" crossorigin src="/assets/index-D_FVv5us.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DccMUwxG.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Dynamic Header -->
+        <header id="app-header">
+            <div class="header-info">
+                <div class="logo-v3">LIFE.STATS</div>
+                <div class="sys-id">SYS.ID: 9X-441 // ONLINE</div>
+            </div>
+            <button id="settings-btn" class="settings-icon" aria-label="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </button>
+        </header>
+
+        <main id="main-content">
+            <!-- 1. Input Screen -->
+            <section id="input-section" class="input-screen">
+                <div class="card">
+                    <h3 class="auth-header"></h3>
+                    <div class="form-field-wrapper">
+                        <label class="item-subtitle">Persons Name</label>
+                        <input type="text" id="user-name" class="input-field" placeholder="Name">
+                    </div>
+                    <div class="form-field-wrapper">
+                        <label class="item-subtitle">Date Of Birth</label>
+                        <input type="date" id="user-dob" class="input-field">
+                    </div>
+                    <div class="form-field-wrapper">
+                        <label class="item-subtitle">Gender  (OPTIONAL)</label>
+                        <select id="user-gender" class="input-field">
+                            <option value="">SELECT...</option>
+                            <option value="MALE">MALE</option>
+                            <option value="FEMALE">FEMALE</option>
+                            <option value="OTHER">OTHER</option>
+                        </select>
+                    </div>
+                    <div class="form-field-wrapper">
+                        <label class="item-subtitle">Country (OPTIONAL)</label>
+                        <input type="text" id="user-country" class="input-field" placeholder="IRELAND, EU">
+                    </div>
+                    <div class="form-field-wrapper">
+                        <label class="item-subtitle">Selfie Pic</label>
+                        <input type="file" id="user-pic" class="input-field" accept="image/*">
+                    </div>
+                    <button id="save-user-btn" class="btn-primary">SAVE & INITIALIZE</button>
+                    <button id="generate-btn" class="btn-primary btn-scan hidden">EXECUTE SCAN</button>
+                </div>
+            </section>
+
+            <!-- 2. Loading Screen -->
+            <section id="loading-section" class="hidden">
+                <div class="loading-box">
+                    <div class="item-subtitle" id="loading-status">SCANNING DATA REPOSITORIES...</div>
+                    <div class="progress-bar">
+                        <div id="progress-bar" class="progress-fill"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Results Screen -->
+            <section id="results-section" class="hidden">
+                <!-- Result components will be injected by script.js -->
+            </section>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal-overlay hidden">
+            <div class="card modal-card">
+                <h3 class="modal-title">SYSTEM SETTINGS</h3>
+                <button id="puter-signin-btn" class="btn-primary btn-puter">SIGN IN PUTER</button>
+                <div id="puter-user-info" class="hidden item-subtitle puter-info">
+                    USER_AUTH: <span id="puter-username" class="username-accent"></span>
+                </div>
+
+                <h4 class="item-subtitle modules-title">DATA MODULES</h4>
+                <div class="modules-list">
+                    <label><input type="checkbox" class="section-toggle" data-section="realtime" checked> Live Stats</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="facts" checked> Name Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="livedthrough" checked> Events Lived</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="top" checked> Top Media Year Born</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="standing" checked> GLOBAL STANDING</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="astronomical" checked> Star Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="transit" checked> Earth Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="economic" checked> Economy Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="tech" checked> Tech Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="network" checked> Network Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="eco" checked> Eco Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="power" checked> Power Facts</label>
+                    <label><input type="checkbox" class="section-toggle" data-section="knowledge" checked> Knowledge Facts</label>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="settings-save-btn" class="btn-primary btn-modal">APPLY</button>
+                    <button id="settings-cancel-btn" class="btn-primary btn-modal btn-cancel">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="notification" class="hidden notification-toast"></div>
+    </div>
+</body>
+</html>

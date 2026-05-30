@@ -1,10 +1,14 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null, bornDay: '' },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    domCache: {},
+    liveUpdateInterval: null
 };
+
+const numberFormatter = new Intl.NumberFormat();
 
 const elements = {
     inputSection: document.getElementById('input-section'),
@@ -38,6 +42,10 @@ function loadUserData() {
     const savedData = localStorage.getItem('jr_life_facts_user');
     if (savedData) {
         state.user = JSON.parse(savedData);
+        if (state.user.dob) {
+            state.user.dobDate = new Date(state.user.dob);
+            state.user.bornDay = state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        }
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
         document.getElementById('user-country').value = state.user.country;
@@ -63,6 +71,9 @@ function saveUserData() {
     state.user.gender = document.getElementById('user-gender').value;
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
+
+    state.user.dobDate = new Date(state.user.dob);
+    state.user.bornDay = state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
 
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
@@ -595,8 +606,8 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+function calculateAge(dob) {
+    const diff = new Date() - (dob instanceof Date ? dob : new Date(dob));
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -604,29 +615,41 @@ function calculateAge(dobStr) {
     };
 }
 
-function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+function updateLiveStat(id, val) {
+    if (!state.domCache[id]) {
+        state.domCache[id] = document.getElementById(id);
+    }
+    const el = state.domCache[id];
+    if (el && el.textContent != val) {
+        el.textContent = val;
+    }
+}
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+function startLiveUpdates() {
+    if (state.liveUpdateInterval) {
+        clearInterval(state.liveUpdateInterval);
+    }
+    state.liveUpdateInterval = setInterval(() => {
+        if (!state.user.dob || !state.user.dobDate) return;
+        const diff = new Date() - state.user.dobDate;
+        const age = calculateAge(state.user.dobDate);
+
+        updateLiveStat('val-seconds', numberFormatter.format(Math.floor(diff / 1000)));
+        updateLiveStat('val-years', age.years);
+        updateLiveStat('val-months', numberFormatter.format(Math.floor(diff / 2629800000)));
+        updateLiveStat('val-weeks', numberFormatter.format(Math.floor(diff / 604800000)));
+        updateLiveStat('val-days', numberFormatter.format(Math.floor(diff / 86400000)));
+        updateLiveStat('val-hours', numberFormatter.format(Math.floor(diff / 3600000)));
+        updateLiveStat('val-minutes', numberFormatter.format(age.minutes));
+        updateLiveStat('val-born-day', state.user.bornDay);
 
         const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
+        updateLiveStat('est-heart', formatLarge(mins * 72));
+        updateLiveStat('est-breaths', formatLarge(mins * 14));
+        updateLiveStat('est-sleep', formatLarge(days * 8));
+        updateLiveStat('est-eat', formatLarge(days * 1.5));
 
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        updateLiveStat('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 
