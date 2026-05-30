@@ -15,6 +15,20 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// Performance Caches
+const domCache = {};
+const numberFormatter = new Intl.NumberFormat('en-US');
+let lastValues = {};
+
+// Time Constants
+const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = 60000;
+const MS_PER_HOUR = 3600000;
+const MS_PER_DAY = 86400000;
+const MS_PER_WEEK = 604800000;
+const MS_PER_MONTH = 2630016000;
+const MS_PER_YEAR = 31557600000;
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -211,28 +225,39 @@ function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    const updateEl = (id, value) => {
+        if (lastValues[id] !== value) {
+            if (!domCache[id]) domCache[id] = document.getElementById(id);
+            if (domCache[id]) {
+                domCache[id].textContent = formatNumber(value);
+                lastValues[id] = value;
+            }
+        }
+    };
+
+    updateEl('counter-years', age.years);
+    updateEl('counter-months', age.months);
+    updateEl('counter-weeks', age.weeks);
+    updateEl('counter-days', age.days);
+    updateEl('counter-hours', age.hours);
+    updateEl('counter-minutes', age.minutes);
+    updateEl('counter-seconds', age.seconds);
 }
 
 function calculateAge(birthDate) {
-    const now = new Date();
-    const diff = now - birthDate;
+    const now = Date.now();
+    const birthTs = birthDate instanceof Date ? birthDate.getTime() : new Date(birthDate).getTime();
+    const diff = now - birthTs;
 
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30.44);
-    const years = Math.floor(days / 365.25);
-
-    return { years, months, weeks, days, hours, minutes, seconds };
+    return {
+        years: Math.floor(diff / MS_PER_YEAR),
+        months: Math.floor(diff / MS_PER_MONTH),
+        weeks: Math.floor(diff / MS_PER_WEEK),
+        days: Math.floor(diff / MS_PER_DAY),
+        hours: Math.floor(diff / MS_PER_HOUR),
+        minutes: Math.floor(diff / MS_PER_MINUTE),
+        seconds: Math.floor(diff / MS_PER_SECOND)
+    };
 }
 
 // ==========================================
@@ -445,14 +470,14 @@ function clearUserData() {
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNumber(num) {
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 function formatLargeNumber(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toLocaleString('en-US');
+    return numberFormatter.format(num);
 }
 
 // ==========================================
