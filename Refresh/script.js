@@ -201,7 +201,30 @@ function populateDashboard() {
 // ==========================================
 // LIVE COUNTERS
 // ==========================================
+const liveFormatter = new Intl.NumberFormat('en-US');
+const counterElementsCache = {};
+const counterLastValues = {};
+
+/**
+ * Updates a counter element with dirty checking and DOM caching.
+ */
+function updateLiveCounterElement(id, value) {
+    if (!(id in counterElementsCache)) {
+        counterElementsCache[id] = document.getElementById(id);
+    }
+    const el = counterElementsCache[id];
+    const formattedValue = typeof value === 'number' ? liveFormatter.format(value) : value;
+    if (el && counterLastValues[id] !== formattedValue) {
+        el.textContent = formattedValue;
+        counterLastValues[id] = formattedValue;
+    }
+}
+
 function startLiveCounters() {
+    // Clear cache when starting/restarting counters to ensure fresh references
+    for (const key in counterElementsCache) delete counterElementsCache[key];
+    for (const key in counterLastValues) delete counterLastValues[key];
+
     updateLiveCounters();
     if (updateInterval) clearInterval(updateInterval);
     updateInterval = setInterval(updateLiveCounters, 1000);
@@ -211,13 +234,13 @@ function updateLiveCounters() {
     if (!userData.dob) return;
     const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    updateLiveCounterElement('counter-years', age.years);
+    updateLiveCounterElement('counter-months', age.months);
+    updateLiveCounterElement('counter-weeks', age.weeks);
+    updateLiveCounterElement('counter-days', age.days);
+    updateLiveCounterElement('counter-hours', age.hours);
+    updateLiveCounterElement('counter-minutes', age.minutes);
+    updateLiveCounterElement('counter-seconds', age.seconds);
 }
 
 function calculateAge(birthDate) {
