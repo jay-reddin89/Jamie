@@ -1,0 +1,3 @@
+## 2026-03-22 - Optimized High-Frequency Update Loop
+**Learning:** In a vanilla JS application with a 1s interval loop, redundant DOM lookups (`getElementById`) and expensive string/date parsing (`new Date()`, `toLocaleString()`) are the primary sources of performance overhead. Implementing a lazy DOM cache and dirty checking can significantly reduce layout/reflow frequency.
+**Action:** Always hoist expensive formatters like `Intl.NumberFormat` outside of recurring intervals. Use a central `state.domCache` for elements that are updated frequently. Pre-parse any static or semi-static data (like birth dates) into native objects during load/save operations to eliminate repetitive parsing in the update loop.
