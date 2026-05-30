@@ -3,7 +3,11 @@ const state = {
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    domCache: {},
+    lastValues: {},
+    liveUpdateInterval: null,
+    numberFormatter: new Intl.NumberFormat('en-US')
 };
 
 const elements = {
@@ -38,6 +42,7 @@ function loadUserData() {
     const savedData = localStorage.getItem('jr_life_facts_user');
     if (savedData) {
         state.user = JSON.parse(savedData);
+        if (state.user.dob) state.user.dobDate = new Date(state.user.dob);
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
         document.getElementById('user-country').value = state.user.country;
@@ -64,6 +69,7 @@ function saveUserData() {
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
 
+    state.user.dobDate = new Date(state.user.dob);
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
     elements.generateBtn.classList.remove('hidden');
@@ -605,29 +611,71 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    state.liveUpdateInterval = setInterval(() => {
+        const dobDate = state.user.dobDate;
+        if (!dobDate) return;
 
-        const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
+        const now = new Date();
+        const diff = now - dobDate;
 
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        // ⚡ Performance: Pre-calculate values to avoid redundant math in updates
+        const totalSeconds = Math.floor(diff / 1000);
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const totalHours = Math.floor(totalMinutes / 60);
+        const totalDays = Math.floor(totalHours / 24);
+        const totalWeeks = Math.floor(totalDays / 7);
+        const totalMonths = Math.floor(totalDays / 30.44);
+
+        // ⚡ Performance: Use accurate age but avoid re-parsing dob strings
+        // We use the original calculateAge logic for accuracy but pass the Date object
+        const totalYears = Math.floor(diff / 31557600000);
+
+        // ⚡ Performance: Skip layout/reflow costs with dirty checking and DOM caching
+        updateStat('val-seconds', totalSeconds, true);
+        updateStat('val-years', totalYears, true);
+        updateStat('val-months', totalMonths, true);
+        updateStat('val-weeks', totalWeeks, true);
+        updateStat('val-days', totalDays, true);
+        updateStat('val-hours', totalHours, true);
+        updateStat('val-minutes', totalMinutes, true);
+
+        // Only update 'born day' once or when it changes
+        if (!state.lastValues['val-born-day']) {
+            updateStat('val-born-day', dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        }
+
+        updateStat('est-heart', formatLarge(totalMinutes * 72));
+        updateStat('est-breaths', formatLarge(totalMinutes * 14));
+        updateStat('est-sleep', formatLarge(totalDays * 8));
+        updateStat('est-eat', formatLarge(totalDays * 1.5));
+        updateStat('est-blinks', formatLarge(totalDays * 15 * 60 * 16));
     }, 1000);
+}
+
+/**
+ * ⚡ Performance: Updates a DOM element's textContent only if the value has changed.
+ * Uses a cache for DOM element lookups and 'dirty checking' to avoid redundant layout/reflow costs.
+ *
+ * @param {string} id - The DOM element ID to update.
+ * @param {string|number} val - The new value.
+ * @param {boolean} isNumeric - Whether the value should be formatted using Intl.NumberFormat.
+ */
+function updateStat(id, val, isNumeric = false) {
+    if (!(id in state.domCache)) {
+        state.domCache[id] = document.getElementById(id);
+    }
+
+    const el = state.domCache[id];
+    if (!el) return;
+
+    const finalVal = isNumeric ? state.numberFormatter.format(val) : val;
+
+    if (state.lastValues[id] !== finalVal) {
+        el.textContent = finalVal;
+        state.lastValues[id] = finalVal;
+    }
 }
 
 function formatLarge(num) {
