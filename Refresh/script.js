@@ -15,6 +15,27 @@ let userData = {
 let updateInterval = null;
 let isInitialized = false;
 
+// Performance optimization: cache DOM elements and pre-instantiate formatter
+const domCache = {};
+const lastValues = {};
+const numberFormatter = new Intl.NumberFormat('en-US');
+
+/**
+ * Helper to update element text content only if it has changed (dirty checking)
+ */
+function updateElement(id, value) {
+    if (lastValues[id] === value) return;
+
+    if (!domCache[id]) {
+        domCache[id] = document.getElementById(id);
+    }
+
+    if (domCache[id]) {
+        domCache[id].textContent = value;
+        lastValues[id] = value;
+    }
+}
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -202,6 +223,9 @@ function populateDashboard() {
 // LIVE COUNTERS
 // ==========================================
 function startLiveCounters() {
+    // Clear last values to force update on restart
+    for (const key in lastValues) delete lastValues[key];
+
     updateLiveCounters();
     if (updateInterval) clearInterval(updateInterval);
     updateInterval = setInterval(updateLiveCounters, 1000);
@@ -209,19 +233,22 @@ function startLiveCounters() {
 
 function updateLiveCounters() {
     if (!userData.dob) return;
-    const age = calculateAge(userData.dob);
 
-    document.getElementById('counter-years').textContent = formatNumber(age.years);
-    document.getElementById('counter-months').textContent = formatNumber(age.months);
-    document.getElementById('counter-weeks').textContent = formatNumber(age.weeks);
-    document.getElementById('counter-days').textContent = formatNumber(age.days);
-    document.getElementById('counter-hours').textContent = formatNumber(age.hours);
-    document.getElementById('counter-minutes').textContent = formatNumber(age.minutes);
-    document.getElementById('counter-seconds').textContent = formatNumber(age.seconds);
+    // Performance optimization: use a single Date instance for the entire loop
+    const now = new Date();
+    const age = calculateAge(userData.dob, now);
+
+    // Performance optimization: DOM caching, dirty checking, and efficient formatting
+    updateElement('counter-years', numberFormatter.format(age.years));
+    updateElement('counter-months', numberFormatter.format(age.months));
+    updateElement('counter-weeks', numberFormatter.format(age.weeks));
+    updateElement('counter-days', numberFormatter.format(age.days));
+    updateElement('counter-hours', numberFormatter.format(age.hours));
+    updateElement('counter-minutes', numberFormatter.format(age.minutes));
+    updateElement('counter-seconds', numberFormatter.format(age.seconds));
 }
 
-function calculateAge(birthDate) {
-    const now = new Date();
+function calculateAge(birthDate, now = new Date()) {
     const diff = now - birthDate;
 
     const seconds = Math.floor(diff / 1000);
