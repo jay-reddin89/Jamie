@@ -6,6 +6,8 @@ const state = {
     isPuterSignedIn: false
 };
 
+let liveUpdateInterval = null;
+
 const elements = {
     inputSection: document.getElementById('input-section'),
     loadingSection: document.getElementById('loading-section'),
@@ -595,8 +597,14 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+/**
+ * Calculates years, minutes, and seconds from a birth date string.
+ * @param {string} dobStr - The date of birth string.
+ * @param {number} [precalculatedDiff] - Optional pre-calculated difference in milliseconds.
+ * @returns {object} An object containing years, minutes, and seconds.
+ */
+function calculateAge(dobStr, precalculatedDiff) {
+    const diff = precalculatedDiff !== undefined ? precalculatedDiff : (new Date() - new Date(dobStr));
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -604,29 +612,62 @@ function calculateAge(dobStr) {
     };
 }
 
+/**
+ * Starts the high-frequency update interval for live statistics.
+ * Optimized with DOM element caching, dirty checking, and hoisted dependencies.
+ * Prevents multiple intervals by clearing any existing one before starting.
+ */
 function startLiveUpdates() {
-    setInterval(() => {
+    // Prevent interval leaks
+    if (liveUpdateInterval) clearInterval(liveUpdateInterval);
+
+    // Hoist elements cache and formatters for reuse across 1s ticks
+    const elementsCache = {};
+    const liveStatsFormatter = new Intl.NumberFormat();
+
+    // Pre-calculate user birth date and constant day-of-week string once per initialization
+    const userBornDate = new Date(state.user.dob);
+    const userBornDay = userBornDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+
+    /**
+     * Updates an element's text content only if the value has changed.
+     * Caches DOM references to avoid repeated getElementById lookups.
+     * Uses strict inequality with string conversion for cleaner dirty checking.
+     */
+    const updateIfChanged = (id, value) => {
+        if (!elementsCache[id]) {
+            elementsCache[id] = document.getElementById(id);
+        }
+        const el = elementsCache[id];
+        const stringValue = String(value);
+        if (el && el.textContent !== stringValue) {
+            el.textContent = stringValue;
+        }
+    };
+
+    liveUpdateInterval = setInterval(() => {
         if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+        const diff = new Date() - userBornDate;
+        const age = calculateAge(state.user.dob, diff);
 
+        // Update time-based counters with dirty checking and hoisted formatter
+        updateIfChanged('val-seconds', liveStatsFormatter.format(Math.floor(diff / 1000)));
+        updateIfChanged('val-years', age.years);
+        updateIfChanged('val-months', liveStatsFormatter.format(Math.floor(diff / 2629800000)));
+        updateIfChanged('val-weeks', liveStatsFormatter.format(Math.floor(diff / 604800000)));
+        updateIfChanged('val-days', liveStatsFormatter.format(Math.floor(diff / 86400000)));
+        updateIfChanged('val-hours', liveStatsFormatter.format(Math.floor(diff / 3600000)));
+        updateIfChanged('val-minutes', liveStatsFormatter.format(age.minutes));
+        updateIfChanged('val-born-day', userBornDay);
+
+        // Update biometric estimates
         const mins = diff / 60000, days = diff / 86400000;
-        update('est-heart', formatLarge(mins * 72));
-        update('est-breaths', formatLarge(mins * 14));
-        update('est-sleep', formatLarge(days * 8));
-        update('est-eat', formatLarge(days * 1.5));
-
-        update('est-blinks', formatLarge(days * 15 * 60 * 16));
+        updateIfChanged('est-heart', formatLarge(mins * 72));
+        updateIfChanged('est-breaths', formatLarge(mins * 14));
+        updateIfChanged('est-sleep', formatLarge(days * 8));
+        updateIfChanged('est-eat', formatLarge(days * 1.5));
+        updateIfChanged('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
 
