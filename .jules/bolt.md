@@ -1,0 +1,3 @@
+## 2025-05-15 - [High-Frequency Loop Optimization]
+**Learning:** `toLocaleString()` internally instantiates a new `Intl.NumberFormat` instance on every call, which is extremely expensive when executed every second for multiple fields. Hoisting a single `Intl.NumberFormat` instance and using its `.format()` method reduces execution time significantly. Additionally, "dirty checking" by comparing `textContent` with the new value can skip unnecessary DOM thrashing, but values must be converted to strings for a correct comparison (e.g., `years.toString() !== el.textContent`).
+**Action:** Always hoist formatters and DOM lookups outside of high-frequency intervals. Use string-cast dirty checking for `textContent` updates.
