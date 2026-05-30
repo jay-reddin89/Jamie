@@ -1,9 +1,13 @@
 const state = {
-    user: { name: '', dob: '', country: '', profilePic: '', gender: '' },
+    user: { name: '', dob: '', country: '', profilePic: '', gender: '', dobDate: null },
     settings: {
         sections: ['realtime', 'facts', 'livedthrough', 'top', 'standing', 'astronomical', 'transit', 'economic', 'tech', 'network', 'eco', 'power', 'knowledge']
     },
-    isPuterSignedIn: false
+    isPuterSignedIn: false,
+    liveUpdateInterval: null,
+    domCache: {},
+    lastValues: {},
+    numberFormatter: new Intl.NumberFormat('en-US')
 };
 
 const elements = {
@@ -38,6 +42,7 @@ function loadUserData() {
     const savedData = localStorage.getItem('jr_life_facts_user');
     if (savedData) {
         state.user = JSON.parse(savedData);
+        if (state.user.dob) state.user.dobDate = new Date(state.user.dob);
         document.getElementById('user-name').value = state.user.name;
         document.getElementById('user-dob').value = state.user.dob;
         document.getElementById('user-country').value = state.user.country;
@@ -64,6 +69,7 @@ function saveUserData() {
 
     if (!state.user.name || !state.user.dob) return showNotification('MISSING IDENTIFIER/SEQUENCE');
 
+    state.user.dobDate = new Date(state.user.dob);
     localStorage.setItem('jr_life_facts_user', JSON.stringify(state.user));
     showNotification('SEQUENCE INITIALIZED');
     elements.generateBtn.classList.remove('hidden');
@@ -198,6 +204,8 @@ function createCollapsibleSubSection(label, isCollapsed = true) {
 function renderResults() {
     const sections = state.settings.sections;
     elements.resultsSection.innerHTML = '';
+    state.domCache = {};
+    state.lastValues = {};
 
     // Profile Panel
     const profile = document.createElement('div');
@@ -595,8 +603,9 @@ function getEraData(year) {
 
 // --- Utils ---
 
-function calculateAge(dobStr) {
-    const diff = new Date() - new Date(dobStr);
+function calculateAge(dob) {
+    const dobDate = dob instanceof Date ? dob : new Date(dob);
+    const diff = new Date() - dobDate;
     return {
         years: Math.floor(diff / 31557600000),
         minutes: Math.floor(diff / 60000),
@@ -605,27 +614,45 @@ function calculateAge(dobStr) {
 }
 
 function startLiveUpdates() {
-    setInterval(() => {
-        if (!state.user.dob) return;
-        const diff = new Date() - new Date(state.user.dob);
-        const age = calculateAge(state.user.dob);
-        const update = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (state.liveUpdateInterval) clearInterval(state.liveUpdateInterval);
 
-        update('val-seconds', Math.floor(diff / 1000).toLocaleString());
-        update('val-years', age.years);
-        update('val-months', Math.floor(diff / 2629800000).toLocaleString());
-        update('val-weeks', Math.floor(diff / 604800000).toLocaleString());
-        update('val-days', Math.floor(diff / 86400000).toLocaleString());
-        update('val-hours', Math.floor(diff / 3600000).toLocaleString());
-        update('val-minutes', age.minutes.toLocaleString());
-        update('val-born-day', new Date(state.user.dob).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase());
+    // One-time static updates
+    const bornDayEl = document.getElementById('val-born-day');
+    if (bornDayEl && state.user.dobDate) {
+        bornDayEl.textContent = state.user.dobDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+    }
+
+    state.liveUpdateInterval = setInterval(() => {
+        if (!state.user.dobDate) return;
+        const now = new Date();
+        const diff = now - state.user.dobDate;
+        const age = calculateAge(state.user.dobDate);
+
+        const update = (id, val) => {
+            if (state.lastValues[id] === val) return;
+            if (!state.domCache[id]) state.domCache[id] = document.getElementById(id);
+            const el = state.domCache[id];
+            if (el) {
+                el.textContent = val;
+                state.lastValues[id] = val;
+            }
+        };
+
+        const format = (num) => state.numberFormatter.format(num);
+
+        update('val-seconds', format(Math.floor(diff / 1000)));
+        update('val-years', format(age.years));
+        update('val-months', format(Math.floor(diff / 2629800000)));
+        update('val-weeks', format(Math.floor(diff / 604800000)));
+        update('val-days', format(Math.floor(diff / 86400000)));
+        update('val-hours', format(Math.floor(diff / 3600000)));
+        update('val-minutes', format(age.minutes));
 
         const mins = diff / 60000, days = diff / 86400000;
         update('est-heart', formatLarge(mins * 72));
         update('est-breaths', formatLarge(mins * 14));
         update('est-sleep', formatLarge(days * 8));
         update('est-eat', formatLarge(days * 1.5));
-
         update('est-blinks', formatLarge(days * 15 * 60 * 16));
     }, 1000);
 }
@@ -634,7 +661,7 @@ function formatLarge(num) {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
-    return Math.floor(num).toLocaleString();
+    return state.numberFormatter.format(Math.floor(num));
 }
 
 function getZodiac(date) {
